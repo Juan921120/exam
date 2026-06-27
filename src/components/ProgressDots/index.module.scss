@@ -1,0 +1,46 @@
+@use '@/styles/variables.scss' as *;
+
+.progressDots {
+  display: flex;
+  gap: $spacing-xs;
+  justify-content: center;
+  padding: $spacing-md 0;
+}
+
+.dot {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: $radius-sm;
+  background: $color-bg-page;
+  border: 2rpx solid $color-border;
+  @include flex-center;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.dotCurrent {
+  background: $color-primary;
+  border-color: $color-primary;
+
+  .dotNumber {
+    color: $color-text-white;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.dotAnswered {
+  background: rgba($color-primary, 0.2);
+  border-color: $color-primary;
+
+  .dotNumber {
+    color: $color-primary;
+  }
+}
+
+.dotNumber {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

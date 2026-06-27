@@ -1,0 +1,192 @@
+@use '@/styles/variables.scss' as *;
+
+.questionCard {
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-border;
+}
+
+.questionNumber {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.questionType {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: rgba($color-primary, 0.1);
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-xs;
+}
+
+.questionContent {
+  margin-bottom: $spacing-lg;
+}
+
+.questionText {
+  font-size: $font-size-lg;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+  font-weight: $font-weight-medium;
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.optionButton {
+  @include button-reset;
+  display: flex;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  background: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  transition: all $transition-base;
+  text-align: left;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.optionSelected {
+  background: rgba($color-primary, 0.1);
+  border-color: $color-primary;
+
+  .optionKey, .optionText {
+    color: $color-primary;
+  }
+}
+
+// 复习模式：正确（绿色）
+.optionCorrect {
+  background: rgba(#22c55e, 0.1);
+  border-color: #22c55e;
+
+  .optionKey, .optionText {
+    color: #15803d;
+  }
+}
+
+// 复习模式：错误（红色）
+.optionWrong {
+  background: rgba(#ef4444, 0.1);
+  border-color: #ef4444;
+
+  .optionKey, .optionText {
+    color: #b91c1c;
+  }
+}
+
+// 复习模式：遗漏的正确答案（黄色）
+.optionMissed {
+  background: rgba(#eab308, 0.1);
+  border-color: #eab308;
+
+  .optionKey, .optionText {
+    color: #a16207;
+  }
+}
+
+.optionKey {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-secondary;
+  margin-right: $spacing-md;
+  min-width: 40rpx;
+  text-align: center;
+}
+
+.optionText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  flex: 1;
+}
+
+// 复习模式：答案解析
+.explanation {
+  margin-top: $spacing-lg;
+  padding-top: $spacing-lg;
+  border-top: 2rpx solid $color-border;
+}
+
+.explanationLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.explanationCorrect {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-sm;
+  padding: $spacing-xs 0;
+}
+
+.isCorrect {
+  color: #15803d;
+}
+
+.isWrong {
+  color: #b91c1c;
+}
+
+.answerCompare {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-md;
+  border: 1rpx solid $color-border;
+}
+
+.answerText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.answerHighlight {
+  color: #15803d;
+  font-weight: $font-weight-semibold;
+}
+
+.answerWrong {
+  color: #b91c1c;
+  font-weight: $font-weight-semibold;
+}
+
+.explanationDetail {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.explanationDetailLabel {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.explanationDetailText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}

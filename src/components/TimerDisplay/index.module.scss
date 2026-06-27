@@ -1,0 +1,21 @@
+@use '@/styles/variables.scss' as *;
+
+.timerDisplay {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background: rgba($color-primary, 0.1);
+  border-radius: $radius-sm;
+}
+
+.timerIcon {
+  font-size: $font-size-md;
+  color: $color-primary;
+}
+
+.timerText {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}

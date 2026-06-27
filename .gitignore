@@ -1,0 +1,45 @@
+# 依赖
+node_modules/
+
+# 构建输出
+dist/
+
+# 日志
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 敏感文件 - 密钥和认证信息
+.auth/
+*.key
+private.*
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# 微信小程序
+.miniprogram/
+
+# Taro 编译产物
+.temp/
+.rn_temp/
