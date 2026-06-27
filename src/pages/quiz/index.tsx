@@ -24,6 +24,13 @@ const QuizPage: React.FC = () => {
   const isReview = reviewMode !== null;
   const [submitting, setSubmitting] = useState(false);
 
+  // 计算错误题目索引（复习模式用）
+  const wrongIndices = currentSession
+    ? currentSession.questions
+        .map((q, i) => currentSession.answers[i] !== q.answer ? i : -1)
+        .filter(i => i !== -1)
+    : [];
+
   if (!currentSession) {
     return (
       <View className={styles.quizPage}>
@@ -110,6 +117,7 @@ const QuizPage: React.FC = () => {
           currentIndex={currentSession.currentIndex}
           total={currentSession.questions.length}
           answered={currentSession.answers.map(a => a !== null)}
+          wrongIndices={isReview ? wrongIndices : undefined}
           onDotClick={(index) => {
             useQuizStore.getState().goToQuestion(index);
           }}

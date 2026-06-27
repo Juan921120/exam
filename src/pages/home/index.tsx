@@ -7,7 +7,7 @@ import { useQuizStore } from '../../store/quizStore';
 import { getQuestionStats } from '../../data/questions';
 
 const HomePage: React.FC = () => {
-  const { quizMode, setQuizMode, startQuiz, allQuestions } = useQuizStore();
+  const { quizMode, setQuizMode, startQuiz, allQuestions, sequentialStartIndex } = useQuizStore();
   const stats = getQuestionStats(allQuestions);
 
   // 开始测试
@@ -98,6 +98,9 @@ const HomePage: React.FC = () => {
       <View className={styles.tipSection}>
         <Text className={styles.tipText}>
           当前题库共{stats.total}题
+        </Text>
+        <Text className={styles.tipText}>
+          顺序模式已刷{sequentialStartIndex}题
         </Text>
       </View>
     </ScrollView>

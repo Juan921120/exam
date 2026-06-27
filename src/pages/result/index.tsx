@@ -6,8 +6,13 @@ import styles from './index.module.scss';
 import { useQuizStore } from '../../store/quizStore';
 
 const ResultPage: React.FC = () => {
-  const { history, startReview } = useQuizStore();
+  const { history, startReview, startQuiz } = useQuizStore();
   const latestRecord = history[history.length - 1];
+  const isPerfectScore = latestRecord && latestRecord.result.correctCount === latestRecord.result.totalQuestions;
+  const handleNextRound = () => {
+    startQuiz();
+    Taro.redirectTo({ url: '/pages/quiz/index' });
+  };
 
   if (!latestRecord) {
     return (
@@ -67,8 +72,13 @@ const ResultPage: React.FC = () => {
         <Button className={styles.primaryButton} onClick={handleViewReview}>
           📋 查看解析
         </Button>
-        <Button className={styles.outlineButton} onClick={() => Taro.navigateBack()}>
-          🔄 再来一次
+        {isPerfectScore && (
+          <Button className={styles.primaryButton} onClick={handleNextRound}>
+            🚀 继续下一轮测试
+          </Button>
+        )}
+        <Button className={styles.outlineButton} onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
+          🏠 返回首页
         </Button>
       </View>
     </View>

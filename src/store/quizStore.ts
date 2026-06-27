@@ -1,8 +1,35 @@
 import { create } from 'zustand';
+import Taro from '@tarojs/taro';
 import type { QuizSession, QuizMode, QuizHistory } from '../types/quiz';
 import type { Question } from '../types/question';
 import { getRandomQuestions, getSequentialQuestions, sampleQuestions } from '../data/questions';
 import type { MistakeRecord } from './mistakesStore';
+
+// Storage key
+const STORAGE_KEY = 'quiz-store';
+
+// 从 storage 读取状态
+const loadState = () => {
+  try {
+    const data = Taro.getStorageSync(STORAGE_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (e) {
+    console.error('Failed to load quiz store:', e);
+    return null;
+  }
+};
+
+// 保存状态到 storage
+const saveState = (state: Partial<QuizStore>) => {
+  try {
+    Taro.setStorageSync(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('Failed to save quiz store:', e);
+  }
+};
+
+// 加载初始状态
+const initialState = loadState();
 
 interface QuizStore {
   // 当前测试会话
@@ -33,14 +60,17 @@ interface QuizStore {
 }
 
 export const useQuizStore = create<QuizStore>((set, get) => ({
-  currentSession: null,
-  quizMode: 'random',
-  sequentialStartIndex: 0,
-  history: [],
+  currentSession: initialState?.currentSession || null,
+  quizMode: initialState?.quizMode || 'random',
+  sequentialStartIndex: initialState?.sequentialStartIndex || 0,
+  history: initialState?.history || [],
   allQuestions: sampleQuestions, // 默认使用示例题目
   reviewMode: null,
 
-  setQuizMode: (mode) => set({ quizMode: mode }),
+  setQuizMode: (mode) => {
+    set({ quizMode: mode });
+    saveState({ quizMode: mode });
+  },
 
   loadQuestions: (questions) => set({ allQuestions: questions }),
 
@@ -57,12 +87,21 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       startTime: Date.now()
     };
 
-    set({ currentSession: session, reviewMode: null });
+    const newSequentialIndex = quizMode === 'sequential' 
+      ? sequentialStartIndex + questions.length 
+      : sequentialStartIndex;
 
-    // 更新顺序模式的起始索引
-    if (quizMode === 'sequential') {
-      set({ sequentialStartIndex: sequentialStartIndex + questions.length });
-    }
+    set({ 
+      currentSession: session, 
+      reviewMode: null,
+      sequentialStartIndex: newSequentialIndex 
+    });
+
+    // 保存到 storage
+    saveState({ 
+      currentSession: session, 
+      sequentialStartIndex: newSequentialIndex 
+    });
   },
 
   startReview: (type) => {
@@ -72,9 +111,13 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       reviewMode: type,
       currentSession: { ...currentSession, currentIndex: 0 }
     });
+    saveState({ currentSession: { ...currentSession, currentIndex: 0 } });
   },
 
-  exitReview: () => set({ reviewMode: null }),
+  exitReview: () => {
+    set({ reviewMode: null });
+    saveState({ reviewMode: null });
+  },
 
   startMistakesReview: (mistakeRecords) => {
     if (mistakeRecords.length === 0) return;
@@ -85,26 +128,32 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       startTime: Date.now()
     };
     set({ currentSession: session, reviewMode: 'mistakes' });
+    saveState({ currentSession: session, reviewMode: 'mistakes' });
   },
 
   goToQuestion: (index) => {
     const { currentSession } = get();
     if (currentSession && index >= 0 && index < currentSession.questions.length) {
       set({ currentSession: { ...currentSession, currentIndex: index } });
+      saveState({ currentSession: { ...currentSession, currentIndex: index } });
     }
   },
 
   nextQuestion: () => {
     const { currentSession } = get();
     if (currentSession && currentSession.currentIndex < currentSession.questions.length - 1) {
-      set({ currentSession: { ...currentSession, currentIndex: currentSession.currentIndex + 1 } });
+      const newIndex = currentSession.currentIndex + 1;
+      set({ currentSession: { ...currentSession, currentIndex: newIndex } });
+      saveState({ currentSession: { ...currentSession, currentIndex: newIndex } });
     }
   },
 
   prevQuestion: () => {
     const { currentSession } = get();
     if (currentSession && currentSession.currentIndex > 0) {
-      set({ currentSession: { ...currentSession, currentIndex: currentSession.currentIndex - 1 } });
+      const newIndex = currentSession.currentIndex - 1;
+      set({ currentSession: { ...currentSession, currentIndex: newIndex } });
+      saveState({ currentSession: { ...currentSession, currentIndex: newIndex } });
     }
   },
 
@@ -113,12 +162,14 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     if (currentSession) {
       const newAnswers = [...currentSession.answers];
       newAnswers[currentSession.currentIndex] = answer;
-      set({ currentSession: { ...currentSession, answers: newAnswers } });
+      const updatedSession = { ...currentSession, answers: newAnswers };
+      set({ currentSession: updatedSession });
+      saveState({ currentSession: updatedSession });
     }
   },
 
   submitQuiz: () => {
-    const { currentSession, quizMode } = get();
+    const { currentSession, quizMode, history } = get();
     if (currentSession) {
       // 计算测试结果
       const endTime = Date.now();
@@ -152,13 +203,21 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         }
       };
 
-      set((state) => ({
-        history: [...state.history, historyRecord],
+      const newHistory = [...history, historyRecord];
+      set(() => ({
+        history: newHistory,
         currentSession: {
           ...currentSession,
           endTime
         }
       }));
+      saveState({ 
+        history: newHistory,
+        currentSession: {
+          ...currentSession,
+          endTime
+        }
+      });
     }
   }
 }));

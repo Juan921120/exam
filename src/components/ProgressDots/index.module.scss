@@ -44,3 +44,17 @@
   font-size: $font-size-xs;
   color: $color-text-tertiary;
 }
+
+.dotWrong {
+  background: rgba($color-error, 0.15);
+  border-color: $color-error;
+
+  .dotNumber {
+    color: $color-error;
+  }
+}
+
+.dotNumberWrong {
+  color: $color-error !important;
+  font-weight: $font-weight-semibold;
+}

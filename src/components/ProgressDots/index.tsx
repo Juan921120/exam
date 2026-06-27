@@ -8,6 +8,7 @@ interface ProgressDotsProps {
   currentIndex: number;
   total: number;
   answered: boolean[];
+  wrongIndices?: number[]; // 复习模式下错误题目索引
   onDotClick?: (index: number) => void;
 }
 
@@ -15,6 +16,7 @@ const ProgressDots: React.FC<ProgressDotsProps> = ({
   currentIndex,
   total,
   answered,
+  wrongIndices = [],
   onDotClick
 }) => {
   return (
@@ -25,11 +27,15 @@ const ProgressDots: React.FC<ProgressDotsProps> = ({
           className={classnames(
             styles.dot,
             index === currentIndex && styles.dotCurrent,
-            answered[index] && styles.dotAnswered
+            answered[index] && styles.dotAnswered,
+            wrongIndices.includes(index) && styles.dotWrong
           )}
           onClick={() => onDotClick && onDotClick(index)}
         >
-          <Text className={styles.dotNumber}>{index + 1}</Text>
+          <Text className={classnames(
+            styles.dotNumber,
+            wrongIndices.includes(index) && styles.dotNumberWrong
+          )}>{index + 1}</Text>
         </View>
       ))}
     </View>
