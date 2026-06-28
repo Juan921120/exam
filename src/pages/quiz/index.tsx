@@ -19,13 +19,12 @@ const QuizPage: React.FC = () => {
     reviewMode,
     exitReview
   } = useQuizStore();
-  const { addMistake } = useMistakesStore();
+  const { addMistake, removeMistake } = useMistakesStore();
 
-  const isReview = reviewMode !== null;
   const [submitting, setSubmitting] = useState(false);
 
-  // 计算错误题目索引（复习模式用）
-  const wrongIndices = currentSession
+  // 计算错误题目索引（session 复习模式用）
+  const wrongIndices = currentSession && reviewMode === 'session'
     ? currentSession.questions
         .map((q, i) => currentSession.answers[i] !== q.answer ? i : -1)
         .filter(i => i !== -1)
@@ -57,14 +56,29 @@ const QuizPage: React.FC = () => {
       submitQuiz();
       console.log('[submit] submitQuiz 完成');
 
-      // 将错题添加到错题本（附带用户答案）
-      currentSession.questions.forEach((question, index) => {
-        const userAnswer = currentSession.answers[index];
-        if (userAnswer !== question.answer) {
-          console.log('[submit] 添加错题:', question.id, '用户答案:', userAnswer);
-          addMistake(question, userAnswer);
-        }
-      });
+      // 处理错题本
+      if (reviewMode === 'mistakes') {
+        // 错题复习模式：答对的从错题本移除，答错的保留
+        currentSession.questions.forEach((question, index) => {
+          const userAnswer = currentSession.answers[index];
+          if (userAnswer === question.answer) {
+            console.log('[submit] 答对移除错题:', question.id);
+            removeMistake(question.id);
+          } else {
+            console.log('[submit] 答错更新错题:', question.id, '用户答案:', userAnswer);
+            addMistake(question, userAnswer);
+          }
+        });
+      } else {
+        // 正常答题模式：答错的加入错题本
+        currentSession.questions.forEach((question, index) => {
+          const userAnswer = currentSession.answers[index];
+          if (userAnswer !== question.answer) {
+            console.log('[submit] 添加错题:', question.id, '用户答案:', userAnswer);
+            addMistake(question, userAnswer);
+          }
+        });
+      }
       console.log('[submit] 错题处理完成');
 
       Taro.hideLoading();
@@ -89,9 +103,9 @@ const QuizPage: React.FC = () => {
     Taro.navigateBack();
   };
 
-  // 下一题或结束复习
+  // session 复习模式下一题或结束
   const handleNextOrFinish = () => {
-    if (isReview && currentSession.currentIndex >= currentSession.questions.length - 1) {
+    if (currentSession.currentIndex >= currentSession.questions.length - 1) {
       handleBackFromReview();
     } else {
       nextQuestion();
@@ -106,18 +120,18 @@ const QuizPage: React.FC = () => {
       <View className={styles.progressCard}>
         <View className={styles.progressHeader}>
           <Text className={styles.progressText}>
-            {isReview
+            {reviewMode === 'session'
               ? `${currentSession.currentIndex + 1} / ${currentSession.questions.length} 题`
               : `${answeredCount} / ${currentSession.questions.length} 已作答`
             }
           </Text>
-          {!isReview && <TimerDisplay startTime={currentSession.startTime} />}
+          {reviewMode !== 'session' && <TimerDisplay startTime={currentSession.startTime} />}
         </View>
         <ProgressDots
           currentIndex={currentSession.currentIndex}
           total={currentSession.questions.length}
           answered={currentSession.answers.map(a => a !== null)}
-          wrongIndices={isReview ? wrongIndices : undefined}
+          wrongIndices={reviewMode === 'session' ? wrongIndices : undefined}
           onDotClick={(index) => {
             useQuizStore.getState().goToQuestion(index);
           }}
@@ -131,30 +145,31 @@ const QuizPage: React.FC = () => {
         totalQuestions={currentSession.questions.length}
         userAnswer={currentAnswer}
         onAnswer={(answer) => saveAnswer(answer)}
-        isReview={isReview}
+        isReview={reviewMode === 'session'} // 只有 session 复习模式才显示答案
       />
 
       {/* 导航按钮 */}
       <View className={styles.navButtons}>
         <Button
           className={styles.navButton}
-          onClick={isReview ? handleBackFromReview : prevQuestion}
-          disabled={!isReview && currentSession.currentIndex === 0}
+          onClick={reviewMode === 'session' ? handleBackFromReview : prevQuestion}
+          disabled={reviewMode !== 'session' && currentSession.currentIndex === 0}
         >
-          {isReview
-            ? (reviewMode === 'session' ? '← 返回成绩' : '← 返回错题本')
-            : '← 上一题'
+          {reviewMode === 'session'
+            ? '← 返回成绩'
+            : reviewMode === 'mistakes'
+              ? '← 上一题'
+              : '← 上一题'
           }
         </Button>
         <View className={styles.navSpacer} />
-        {isReview ? (
+        {reviewMode === 'session' ? (
+          // session 复习模式：浏览模式，不能作答
           <Button className={styles.navButtonPrimary} onClick={handleNextOrFinish}>
-            {isLastQuestion
-              ? (reviewMode === 'session' ? '返回成绩' : '返回错题本')
-              : '下一题 →'
-            }
+            {isLastQuestion ? '返回成绩' : '下一题 →'}
           </Button>
         ) : isLastQuestion ? (
+          // 正常答题或错题复习：可以提交
           <Button
             className={styles.submitButton}
             onClick={handleSubmit}

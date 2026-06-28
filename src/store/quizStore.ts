@@ -121,10 +121,13 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
   startMistakesReview: (mistakeRecords) => {
     if (mistakeRecords.length === 0) return;
+    // 随机取10个错题（如果错题少于10个则全部）
+    const shuffled = [...mistakeRecords].sort(() => Math.random() - 0.5);
+    const selectedRecords = shuffled.slice(0, 10);
     const session: QuizSession = {
-      questions: mistakeRecords.map(r => ({ ...r.question })),
+      questions: selectedRecords.map(r => ({ ...r.question })),
       currentIndex: 0,
-      answers: mistakeRecords.map(r => r.userAnswer),
+      answers: selectedRecords.map(() => null), // 复习时清空之前的答案，让用户重新作答
       startTime: Date.now()
     };
     set({ currentSession: session, reviewMode: 'mistakes' });
