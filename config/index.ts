@@ -53,6 +53,8 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       },
       webpackChain(chain) {
         chain.resolve.plugin('tsconfig-paths').use(TsconfigPathsPlugin);
+        // 禁用 source map，减小小程序包体积
+        chain.devtool(false);
       },
     },
     h5: {
@@ -90,6 +92,8 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       },
       webpackChain(chain) {
         chain.resolve.plugin('tsconfig-paths').use(TsconfigPathsPlugin);
+        // 禁用 source map，减小 H5 构建体积
+        chain.devtool(false);
       },
     },
     rn: {
