@@ -7,7 +7,8 @@ export default {
   mini: {},
   h5: {
     devServer: {
-      open: false, //禁止自动打开浏览器
+      open: false,
+      port: 10086,
     },
   },
 } satisfies UserConfigExport<'webpack5'>;
