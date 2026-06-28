@@ -3,7 +3,7 @@ import type { Question } from '../types/question';
 import questionsJson from '../../questions.json';
 
 // 导出完整题库数据
-export const sampleQuestions: Question[] = questionsJson;
+export const sampleQuestions: Question[] = questionsJson as Question[];
 
 // 获取题库统计信息
 export function getQuestionStats(questions: Question[]) {

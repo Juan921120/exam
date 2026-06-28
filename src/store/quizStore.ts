@@ -104,7 +104,7 @@ export const useQuizStore = create<QuizStore>((set, get) => {
       return null;
     }
     try {
-      const questions = restoreQuestionsByIds(persistedState.sessionQuestionIds, sampleQuestions);
+      const questions = restoreQuestionsByIds(persistedState.sessionQuestionIds, get().allQuestions);
       if (questions.length === 0) {
         console.warn('No questions restored from saved state');
         return null;
