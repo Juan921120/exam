@@ -1,16 +1,22 @@
 import React, { useEffect } from 'react';
 import { useDidShow, useDidHide } from '@tarojs/taro';
-// 全局样式
 import './app.scss';
+import { loadQuestions } from './data/questions';
+import { useQuizStore } from './store/quizStore';
 
 function App(props) {
-  // 可以使用所有的 React Hooks
-  useEffect(() => {});
+  const loadQuestionsAction = useQuizStore(state => state.loadQuestions);
 
-  // 对应 onShow
+  useEffect(() => {
+    loadQuestions().then(questions => {
+      if (questions.length > 0) {
+        loadQuestionsAction(questions);
+      }
+    });
+  }, []);
+
   useDidShow(() => {});
 
-  // 对应 onHide
   useDidHide(() => {});
 
   return props.children;

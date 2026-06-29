@@ -5,15 +5,12 @@ import type { Question } from '../types/question';
 import { getRandomQuestions, getSequentialQuestions, sampleQuestions } from '../data/questions';
 import type { MistakeRecord } from './mistakesStore';
 
-// Storage key
 const STORAGE_KEY = 'quiz-store';
 
-// 轻量级持久化状态接口（只保存必要数据）
 interface PersistedState {
   quizMode: QuizMode;
   sequentialStartIndex: number;
   history: QuizHistory[];
-  // 当前会话只保存题目ID和答案，不保存完整题目对象
   sessionQuestionIds: number[] | null;
   sessionAnswers: (string | null)[] | null;
   sessionCurrentIndex: number;
@@ -22,7 +19,6 @@ interface PersistedState {
   reviewMode: 'session' | 'mistakes' | null;
 }
 
-// 从 storage 读取状态
 const loadState = (): PersistedState | null => {
   try {
     const data = Taro.getStorageSync(STORAGE_KEY);
@@ -41,13 +37,11 @@ const loadState = (): PersistedState | null => {
   return null;
 };
 
-// 保存状态到 storage
 const saveState = (state: Partial<PersistedState>) => {
   try {
     const current = loadState() || {};
     const newState = { ...current, ...state };
     
-    // 限制历史记录数量，最多保留50条
     if (newState.history && newState.history.length > 50) {
       newState.history = newState.history.slice(-50);
     }
@@ -60,10 +54,8 @@ const saveState = (state: Partial<PersistedState>) => {
   }
 };
 
-// 加载初始状态
 const persistedState = loadState();
 
-// 根据题目ID数组恢复题目对象
 const restoreQuestionsByIds = (questionIds: number[], allQuestions: Question[]): Question[] => {
   return questionIds.map(id => {
     const found = allQuestions.find(q => q.id === id);
@@ -82,6 +74,7 @@ interface QuizStore {
   history: QuizHistory[];
   allQuestions: Question[];
   reviewMode: 'session' | 'mistakes' | null;
+  isLoading: boolean;
 
   setQuizMode: (mode: QuizMode) => void;
   startQuiz: () => void;
@@ -98,13 +91,12 @@ interface QuizStore {
 }
 
 export const useQuizStore = create<QuizStore>((set, get) => {
-  // 尝试从持久化状态恢复当前会话
-  const restoreSession = (): QuizSession | null => {
+  const restoreSession = (allQuestions: Question[]): QuizSession | null => {
     if (!persistedState?.sessionQuestionIds || persistedState.sessionQuestionIds.length === 0) {
       return null;
     }
     try {
-      const questions = restoreQuestionsByIds(persistedState.sessionQuestionIds, get().allQuestions);
+      const questions = restoreQuestionsByIds(persistedState.sessionQuestionIds, allQuestions);
       if (questions.length === 0) {
         console.warn('No questions restored from saved state');
         return null;
@@ -123,22 +115,34 @@ export const useQuizStore = create<QuizStore>((set, get) => {
   };
 
   return {
-    currentSession: restoreSession(),
+    currentSession: restoreSession(sampleQuestions),
     quizMode: persistedState?.quizMode || 'random',
     sequentialStartIndex: persistedState?.sequentialStartIndex || 0,
     history: persistedState?.history || [],
     allQuestions: sampleQuestions,
     reviewMode: persistedState?.reviewMode || null,
+    isLoading: sampleQuestions.length === 0,
 
     setQuizMode: (mode) => {
       set({ quizMode: mode });
       saveState({ quizMode: mode });
     },
 
-    loadQuestions: (questions) => set({ allQuestions: questions }),
+    loadQuestions: (questions) => {
+      set({ 
+        allQuestions: questions, 
+        isLoading: false,
+        currentSession: restoreSession(questions)
+      });
+    },
 
     startQuiz: () => {
       const { quizMode, sequentialStartIndex, allQuestions } = get();
+      if (allQuestions.length === 0) {
+        Taro.showToast({ title: '题库加载中...', icon: 'loading' });
+        return;
+      }
+
       const questions = quizMode === 'random'
         ? getRandomQuestions(allQuestions, 10)
         : getSequentialQuestions(allQuestions, sequentialStartIndex, 10);
@@ -160,7 +164,6 @@ export const useQuizStore = create<QuizStore>((set, get) => {
         sequentialStartIndex: newSequentialIndex 
       });
 
-      // 轻量级持久化：只保存题目ID和答案
       saveState({ 
         sessionQuestionIds: questions.map(q => q.id),
         sessionAnswers: session.answers,

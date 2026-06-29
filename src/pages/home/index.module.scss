@@ -169,3 +169,25 @@
   display: block;
   margin-bottom: $spacing-xs;
 }
+
+.loadingSection {
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-xl;
+  text-align: center;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.loadingText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.loadingSubtext {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
