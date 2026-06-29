@@ -1,9 +1,10 @@
 // 题库数据
+// H5端使用完整题库（包含explanation），小程序端使用精简题库（不含explanation）
+// 这样可以减小小程序包体积，避免超过2MB限制
 import type { Question } from '../types/question';
-import questionsJson from '../../questions.json';
+import { questionsData } from './questions-data';
 
-// 导出完整题库数据
-export const sampleQuestions: Question[] = questionsJson as Question[];
+export const sampleQuestions: Question[] = questionsData as Question[];
 
 // 获取题库统计信息
 export function getQuestionStats(questions: Question[]) {

@@ -152,10 +152,14 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
               </Text>
             )}
           </View>
-          <View className={styles.explanationDetail}>
-            <Text className={styles.explanationDetailLabel}>💡 解析：</Text>
-            <Text className={styles.explanationDetailText}>{question.explanation}</Text>
-          </View>
+          {/* #ifdef H5 */}
+          {question.explanation && (
+            <View className={styles.explanationDetail}>
+              <Text className={styles.explanationDetailLabel}>💡 解析：</Text>
+              <Text className={styles.explanationDetailText}>{question.explanation}</Text>
+            </View>
+          )}
+          {/* #endif */}
         </View>
       )}
     </View>

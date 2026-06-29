@@ -5,7 +5,7 @@ export interface Question {
   q: string; // 题目内容
   answer: string; // 正确答案
   options?: Array<{key: string; text: string}>; // 选项(单选/多选题才有)
-  explanation: string; // 解析
+  explanation?: string; // 解析（H5端完整显示，小程序端暂不包含）
 }
 
 export interface QuestionStats {
