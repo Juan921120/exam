@@ -1,7 +1,7 @@
 import type { Question } from '../types/question';
 import Taro from '@tarojs/taro';
 
-const REMOTE_URL = 'https://raw.githubusercontent.com/your-username/exam-questions/main/questions.json';
+const REMOTE_URL = 'https://raw.githubusercontent.com/Juan921120/exam/main/questions.json';
 
 const STORAGE_KEY = 'exam-questions-cache';
 
