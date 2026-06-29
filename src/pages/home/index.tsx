@@ -4,17 +4,18 @@ import { View, Text, Button, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useQuizStore } from '../../store/quizStore';
-import { getQuestionStats } from '../../data/questions';
+import { questionStats } from '../../data/questions-meta';
 
 const HomePage: React.FC = () => {
-  const { quizMode, setQuizMode, startQuiz, allQuestions, sequentialStartIndex } = useQuizStore();
-  const stats = getQuestionStats(allQuestions);
+  const { quizMode, setQuizMode, sequentialStartIndex } = useQuizStore();
+  const stats = questionStats;
+  const loaded = true;
 
-  // 开始测试
+  // 开始测试 — 不在此处调用 startQuiz()，避免 allQuestions 还未注入就创建空 session
+  // 通过 URL 参数 action=start 告知分包 quiz 页面在加载题库后再开始
   const handleStartQuiz = () => {
-    startQuiz();
     Taro.navigateTo({
-      url: '/pages/quiz/index'
+      url: '/subpackages/exam/pages/quiz/index?action=start'
     });
   };
 
@@ -44,15 +45,15 @@ const HomePage: React.FC = () => {
       {/* 统计信息 */}
       <View className={styles.statsSection}>
         <View className={styles.statCard}>
-          <Text className={styles.statNum}>{stats.tfCount}</Text>
+          <Text className={styles.statNum}>{loaded ? stats.tfCount : '—'}</Text>
           <Text className={styles.statLabel}>判断题</Text>
         </View>
         <View className={styles.statCard}>
-          <Text className={styles.statNum}>{stats.singleCount}</Text>
+          <Text className={styles.statNum}>{loaded ? stats.singleCount : '—'}</Text>
           <Text className={styles.statLabel}>单选题</Text>
         </View>
         <View className={styles.statCard}>
-          <Text className={styles.statNum}>{stats.multiCount}</Text>
+          <Text className={styles.statNum}>{loaded ? stats.multiCount : '—'}</Text>
           <Text className={styles.statLabel}>多选题</Text>
         </View>
       </View>
@@ -97,7 +98,7 @@ const HomePage: React.FC = () => {
       {/* 提示信息 */}
       <View className={styles.tipSection}>
         <Text className={styles.tipText}>
-          当前题库共{stats.total}题
+          {loaded ? `当前题库共${stats.total}题` : '题库加载中...'}
         </Text>
         <Text className={styles.tipText}>
           顺序模式已刷{sequentialStartIndex}题

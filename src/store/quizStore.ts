@@ -2,8 +2,11 @@ import { create } from 'zustand';
 import Taro from '@tarojs/taro';
 import type { QuizSession, QuizMode, QuizHistory } from '../types/quiz';
 import type { Question } from '../types/question';
-import { getRandomQuestions, getSequentialQuestions, sampleQuestions } from '../data/questions';
+// 只引入纯工具函数，不引入 questions.ts（避免 questions.json 被打包进主包）
+import { getRandomQuestions, getSequentialQuestions } from '../data/question-utils';
 import type { MistakeRecord } from './mistakesStore';
+// 注意：sampleQuestions（题库数据）不在此处静态 import
+// 由分包页面（subpackages/exam）在运行时通过 loadQuestions() 注入，避免数据进入主包
 
 // Storage key
 const STORAGE_KEY = 'quiz-store';
@@ -127,7 +130,8 @@ export const useQuizStore = create<QuizStore>((set, get) => {
     quizMode: persistedState?.quizMode || 'random',
     sequentialStartIndex: persistedState?.sequentialStartIndex || 0,
     history: persistedState?.history || [],
-    allQuestions: sampleQuestions,
+    // 主包初始为空数组，分包 quiz 页面 onLoad 时通过 loadQuestions() 注入完整题库
+    allQuestions: [] as Question[],
     reviewMode: persistedState?.reviewMode || null,
 
     setQuizMode: (mode) => {
@@ -135,7 +139,28 @@ export const useQuizStore = create<QuizStore>((set, get) => {
       saveState({ quizMode: mode });
     },
 
-    loadQuestions: (questions) => set({ allQuestions: questions }),
+    loadQuestions: (questions) => {
+      set({ allQuestions: questions });
+      // 如果当前没有会话，且存在持久化的会话ID，尝试恢复会话
+      if (!get().currentSession && persistedState?.sessionQuestionIds && persistedState.sessionQuestionIds.length > 0) {
+        try {
+          const restoredQuestions = restoreQuestionsByIds(persistedState.sessionQuestionIds, questions);
+          if (restoredQuestions.length > 0) {
+            set({
+              currentSession: {
+                questions: restoredQuestions,
+                currentIndex: persistedState.sessionCurrentIndex,
+                answers: persistedState.sessionAnswers || restoredQuestions.map(() => null),
+                startTime: persistedState.sessionStartTime,
+                endTime: persistedState.sessionEndTime
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Failed to restore session on loadQuestions:', e);
+        }
+      }
+    },
 
     startQuiz: () => {
       const { quizMode, sequentialStartIndex, allQuestions } = get();

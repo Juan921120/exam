@@ -16,7 +16,7 @@ const MistakesPage: React.FC = () => {
       return;
     }
     startMistakesReview(mistakeRecords);
-    Taro.navigateTo({ url: '/pages/quiz/index' });
+    Taro.navigateTo({ url: '/subpackages/exam/pages/quiz/index' });
   };
 
   return (

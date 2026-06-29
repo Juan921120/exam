@@ -3,9 +3,16 @@ export default defineAppConfig({
     'pages/home/index',
     'pages/mistakes/index',
     'pages/mine/index',
-    'pages/quiz/index',
-    'pages/result/index',
-    'pages/review/index'
+  ],
+  subPackages: [
+    {
+      root: 'subpackages/exam',
+      pages: [
+        'pages/quiz/index',
+        'pages/result/index',
+        'pages/review/index',
+      ]
+    }
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -34,3 +41,4 @@ export default defineAppConfig({
     ]
   }
 })
+
