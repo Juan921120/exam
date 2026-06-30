@@ -2,33 +2,28 @@
 
 .resultPage {
   min-height: 100vh;
-  background: $color-bg-page;
-  padding: $spacing-lg $page-padding;
+  padding: 120rpx $page-padding $spacing-lg;
 }
 
 .heroSection {
   text-align: center;
-  padding: $spacing-xl 0;
+  padding: 308rpx 0 $spacing-xl;
 }
 
 .scoreCircle {
-  width: 200rpx;
-  height: 200rpx;
-  border-radius: $radius-round;
-  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
   @include flex-center;
-  margin: 0 auto $spacing-lg;
+  margin: 0 auto 24rpx;
 }
 
 .scoreNum {
   font-size: 60rpx;
   font-weight: $font-weight-bold;
-  color: $color-text-white;
+  color: $color-text-primary;
 }
 
 .scoreDen {
   font-size: $font-size-md;
-  color: $color-text-white;
+  color: $color-text-primary;
 }
 
 .gradeText {
@@ -36,33 +31,40 @@
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
   margin-bottom: $spacing-sm;
+  margin-top: 12rpx;
 }
 
 .rateText {
   font-size: $font-size-lg;
   color: $color-primary;
+  margin-top: 20rpx;
 }
 
 .statsSection {
   display: flex;
   gap: $spacing-md;
-  margin-bottom: $spacing-lg;
+  margin-bottom: 21rpx;
+  margin-top: 40rpx;
 }
 
 .statCard {
   flex: 1;
-  background: $color-bg-card;
+  width: calc(33.333% + 4rpx);
   border-radius: $radius-md;
-  padding: $spacing-lg;
-  @include flex-center;
-  box-shadow: $shadow-card;
+  padding-left: 60rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  box-shadow: none;
+  aspect-ratio: 13 / 10;
 }
 
 .statValue {
   font-size: $font-size-xl;
   font-weight: $font-weight-bold;
-  color: $color-primary;
-  margin-bottom: $spacing-xs;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
 }
 
 .statLabel {
@@ -74,16 +76,19 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
+  margin-top: 20rpx;
 }
 
 .primaryButton, .outlineButton {
   @include button-reset;
   width: 100%;
-  height: $button-height-lg;
+  height: auto;
+  padding: 0;
   border-radius: $radius-button;
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   transition: all $transition-base;
+  aspect-ratio: 15 / 3;
 
   &:active {
     opacity: 0.9;
@@ -92,14 +97,14 @@
 }
 
 .primaryButton {
-  background: $color-primary;
-  color: $color-text-white;
+  color: $color-text-primary;
+  background: none;
 }
 
 .outlineButton {
-  background: $color-bg-card;
-  border: 2rpx solid $color-border;
   color: $color-text-primary;
+  background: none;
+  border: none;
 }
 
 .errorText {

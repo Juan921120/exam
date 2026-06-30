@@ -73,8 +73,17 @@
 }
 
 .submitButton {
-  background: $color-success;
-  color: $color-text-white;
+  background: $color-success !important;
+  color: $color-text-white !important;
+  border: none !important;
+  
+  &::after {
+    border: none !important;
+  }
+  
+  &:not(:disabled) {
+    opacity: 1 !important;
+  }
 }
 
 .errorText {

@@ -28,15 +28,21 @@ export default defineAppConfig({
     list: [
       {
         pagePath: 'pages/home/index',
-        text: '首页'
+        text: '首页',
+        iconPath: '/static/images/assets/home.png',
+        selectedIconPath: '/static/images/assets/home.png'
       },
       {
         pagePath: 'pages/mistakes/index',
-        text: '错题本'
+        text: '错题本',
+        iconPath: '/static/images/assets/wrongBook.png',
+        selectedIconPath: '/static/images/assets/wrongBook.png'
       },
       {
         pagePath: 'pages/mine/index',
-        text: '我的'
+        text: '我的',
+        iconPath: '/static/images/assets/me.png',
+        selectedIconPath: '/static/images/assets/me.png'
       }
     ]
   }

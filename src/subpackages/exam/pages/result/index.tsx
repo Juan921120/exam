@@ -5,6 +5,13 @@ import Taro, { useLoad, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useQuizStore } from '../../../../store/quizStore';
 import { sampleQuestions } from '../../../../data/questions';
+import bgImage from '../../../../assets/UI_03.png';
+import rightBg from '../../../../assets/right.png';
+import wrongBg from '../../../../assets/wrong.png';
+import timeBg from '../../../../assets/time.png';
+import lookBg from '../../../../assets/look.png';
+import returnBg from '../../../../assets/retrun.png';
+import moreOneBg from '../../../../assets/moreOne.png';
 
 const ResultPage: React.FC = () => {
   const { history, startReview, startQuiz, loadQuestions, allQuestions } = useQuizStore();
@@ -26,6 +33,14 @@ const ResultPage: React.FC = () => {
 
   const latestRecord = history[history.length - 1];
   const isPerfectScore = latestRecord && latestRecord.result.correctCount === latestRecord.result.totalQuestions;
+
+  const bgStyle = {
+    backgroundImage: `url(${bgImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center top',
+    backgroundRepeat: 'no-repeat',
+  };
+
   const handleNextRound = () => {
     startQuiz();
     Taro.redirectTo({ url: '/subpackages/exam/pages/quiz/index' });
@@ -33,7 +48,7 @@ const ResultPage: React.FC = () => {
 
   if (!latestRecord) {
     return (
-      <View className={styles.resultPage}>
+      <View className={styles.resultPage} style={bgStyle}>
         <Text className={styles.errorText}>未找到测试结果</Text>
         <Button className={styles.backButton} onClick={() => Taro.navigateBack()}>
           返回首页
@@ -52,11 +67,11 @@ const ResultPage: React.FC = () => {
   };
 
   return (
-    <View className={styles.resultPage}>
+    <View className={styles.resultPage} style={bgStyle}>
       {/* 成绩展示 */}
       <View className={styles.heroSection}>
         <View className={styles.scoreCircle}>
-          <Text className={styles.scoreNum}>{result.correctCount}</Text>
+          <Text className={styles.scoreNum}>{result.correctCount} </Text>
           <Text className={styles.scoreDen}>/ {result.totalQuestions}</Text>
         </View>
         <Text className={styles.gradeText}>
@@ -69,15 +84,15 @@ const ResultPage: React.FC = () => {
 
       {/* 统计数据 */}
       <View className={styles.statsSection}>
-        <View className={styles.statCard}>
+        <View className={styles.statCard} style={{ backgroundImage: `url(${rightBg})`, backgroundSize: '100% 100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
           <Text className={styles.statValue}>{result.correctCount}</Text>
           <Text className={styles.statLabel}>答对</Text>
         </View>
-        <View className={styles.statCard}>
+        <View className={styles.statCard} style={{ backgroundImage: `url(${wrongBg})`, backgroundSize: '100% 100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
           <Text className={styles.statValue}>{result.wrongCount}</Text>
           <Text className={styles.statLabel}>答错</Text>
         </View>
-        <View className={styles.statCard}>
+        <View className={styles.statCard} style={{ backgroundImage: `url(${timeBg})`, backgroundSize: '100% 100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
           <Text className={styles.statValue}>
             {Math.floor(result.timeSpent / 60000)}:{Math.floor((result.timeSpent % 60000) / 1000).toString().padStart(2, '0')}
           </Text>
@@ -85,19 +100,16 @@ const ResultPage: React.FC = () => {
         </View>
       </View>
 
-      {/* 操作按钮 */}
+      {/* 操作按钮区域 - 按钮使用背景图展示功能，无文字 */}
       <View className={styles.actionSection}>
-        <Button className={styles.primaryButton} onClick={handleViewReview}>
-          📋 查看解析
-        </Button>
+        {/* 查看解析按钮 - 背景图：look.png */}
+        <Button className={styles.primaryButton} style={{ backgroundImage: `url(${lookBg})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} onClick={handleViewReview} />
+        {/* 继续下一轮答题按钮 - 背景图：moreOne.png（满分或已查看解析后显示） */}
         {(isPerfectScore || hasViewedReview) && (
-          <Button className={styles.primaryButton} onClick={handleNextRound}>
-            🚀 继续下一轮测试
-          </Button>
+          <Button className={styles.primaryButton} style={{ backgroundImage: `url(${moreOneBg})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} onClick={handleNextRound} />
         )}
-        <Button className={styles.outlineButton} onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
-          🏠 返回首页
-        </Button>
+        {/* 返回首页按钮 - 背景图：returnBg */}
+        <Button className={styles.outlineButton} style={{ backgroundImage: `url(${returnBg})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} onClick={() => Taro.switchTab({ url: '/pages/home/index' })} />
       </View>
     </View>
   );

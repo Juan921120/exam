@@ -1,3 +1,3 @@
 export default definePageConfig({
-  navigationBarTitleText: '测试结果'
+  navigationStyle: 'custom'
 });

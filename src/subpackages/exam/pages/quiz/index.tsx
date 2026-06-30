@@ -197,8 +197,9 @@ const QuizPage: React.FC = () => {
             className={styles.submitButton}
             onClick={handleSubmit}
             disabled={submitting}
+            type="primary"
           >
-            {submitting ? '提交中...' : '提交测试'}
+            {submitting ? '提交中...' : '提交答案'}
           </Button>
         ) : (
           <Button className={styles.navButtonPrimary} onClick={nextQuestion}>
