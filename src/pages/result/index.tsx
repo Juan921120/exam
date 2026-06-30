@@ -1,12 +1,21 @@
 // 结果页
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, Button } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useQuizStore } from '../../store/quizStore';
 
 const ResultPage: React.FC = () => {
   const { history, startReview, startQuiz } = useQuizStore();
+  const [hasViewedReview, setHasViewedReview] = useState(false);
+  const isReturningFromReview = useRef(false);
+
+  useDidShow(() => {
+    if (isReturningFromReview.current) {
+      setHasViewedReview(true);
+      isReturningFromReview.current = false;
+    }
+  });
   const latestRecord = history[history.length - 1];
   const isPerfectScore = latestRecord && latestRecord.result.correctCount === latestRecord.result.totalQuestions;
   const handleNextRound = () => {
@@ -29,6 +38,7 @@ const ResultPage: React.FC = () => {
 
   // 查看解析：进入答题页复习模式
   const handleViewReview = () => {
+    isReturningFromReview.current = true;
     startReview('session');
     Taro.navigateTo({ url: '/pages/quiz/index' });
   };
@@ -72,7 +82,7 @@ const ResultPage: React.FC = () => {
         <Button className={styles.primaryButton} onClick={handleViewReview}>
           📋 查看解析
         </Button>
-        {isPerfectScore && (
+        {(isPerfectScore || hasViewedReview) && (
           <Button className={styles.primaryButton} onClick={handleNextRound}>
             🚀 继续下一轮测试
           </Button>

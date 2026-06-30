@@ -175,14 +175,9 @@ export const useQuizStore = create<QuizStore>((set, get) => {
         startTime: Date.now()
       };
 
-      const newSequentialIndex = quizMode === 'sequential' 
-        ? sequentialStartIndex + questions.length 
-        : sequentialStartIndex;
-
       set({ 
         currentSession: session, 
-        reviewMode: null,
-        sequentialStartIndex: newSequentialIndex 
+        reviewMode: null
       });
 
       // 轻量级持久化：只保存题目ID和答案
@@ -192,7 +187,6 @@ export const useQuizStore = create<QuizStore>((set, get) => {
         sessionCurrentIndex: session.currentIndex,
         sessionStartTime: session.startTime,
         sessionEndTime: undefined,
-        sequentialStartIndex: newSequentialIndex,
         reviewMode: null
       });
     },
@@ -309,14 +303,21 @@ export const useQuizStore = create<QuizStore>((set, get) => {
         const newHistory = [...history, historyRecord];
         const updatedSession = { ...currentSession, endTime };
         
+        let newSequentialIndex = get().sequentialStartIndex;
+        if (quizMode === 'sequential') {
+          newSequentialIndex += currentSession.questions.length;
+        }
+        
         set(() => ({
           history: newHistory,
-          currentSession: updatedSession
+          currentSession: updatedSession,
+          sequentialStartIndex: newSequentialIndex
         }));
         
         saveState({ 
           history: newHistory,
-          sessionEndTime: endTime
+          sessionEndTime: endTime,
+          sequentialStartIndex: newSequentialIndex
         });
       }
     },

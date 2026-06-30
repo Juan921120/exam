@@ -16,14 +16,14 @@ export default defineAppConfig({
   ],
   window: {
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#1890ff',
+    navigationBarBackgroundColor: '#E5C5C5',
     navigationBarTitleText: 'AI训练师题库',
     navigationBarTextStyle: 'white'
   },
   tabBar: {
-    color: '#8c8c8c',
-    selectedColor: '#1890ff',
-    backgroundColor: '#ffffff',
+    color: '#B8A089',
+    selectedColor: '#D4A0A0',
+    backgroundColor: '#FFFBF2',
     borderStyle: 'black',
     list: [
       {

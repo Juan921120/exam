@@ -73,33 +73,33 @@
   }
 }
 
-// 复习模式：正确（绿色）
+// 复习模式：正确（莫兰迪薄荷绿）
 .optionCorrect {
-  background: rgba(#22c55e, 0.1);
-  border-color: #22c55e;
+  background: rgba($color-success, 0.15);
+  border-color: $color-success;
 
   .optionKey, .optionText {
-    color: #15803d;
+    color: #6B9B7A;
   }
 }
 
-// 复习模式：错误（红色）
+// 复习模式：错误（莫兰迪珊瑚粉）
 .optionWrong {
-  background: rgba(#ef4444, 0.1);
-  border-color: #ef4444;
+  background: rgba($color-error, 0.15);
+  border-color: $color-error;
 
   .optionKey, .optionText {
-    color: #b91c1c;
+    color: #B87070;
   }
 }
 
-// 复习模式：遗漏的正确答案（黄色）
+// 复习模式：遗漏的正确答案（莫兰迪奶油黄）
 .optionMissed {
-  background: rgba(#eab308, 0.1);
-  border-color: #eab308;
+  background: rgba($color-warning, 0.15);
+  border-color: $color-warning;
 
   .optionKey, .optionText {
-    color: #a16207;
+    color: #B8A070;
   }
 }
 
@@ -140,11 +140,11 @@
 }
 
 .isCorrect {
-  color: #15803d;
+  color: #6B9B7A;
 }
 
 .isWrong {
-  color: #b91c1c;
+  color: #B87070;
 }
 
 .answerCompare {
@@ -164,12 +164,12 @@
 }
 
 .answerHighlight {
-  color: #15803d;
+  color: #6B9B7A;
   font-weight: $font-weight-semibold;
 }
 
 .answerWrong {
-  color: #b91c1c;
+  color: #B87070;
   font-weight: $font-weight-semibold;
 }
 
