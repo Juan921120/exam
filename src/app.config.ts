@@ -29,20 +29,20 @@ export default defineAppConfig({
       {
         pagePath: 'pages/home/index',
         text: '首页',
-        iconPath: '/static/images/assets/home.png',
-        selectedIconPath: '/static/images/assets/home.png'
+        iconPath: './assets/home.png',
+        selectedIconPath: './assets/home.png'
       },
       {
         pagePath: 'pages/mistakes/index',
         text: '错题本',
-        iconPath: '/static/images/assets/wrongBook.png',
-        selectedIconPath: '/static/images/assets/wrongBook.png'
+        iconPath: './assets/wrongBook.png',
+        selectedIconPath: './assets/wrongBook.png'
       },
       {
         pagePath: 'pages/mine/index',
         text: '我的',
-        iconPath: '/static/images/assets/me.png',
-        selectedIconPath: '/static/images/assets/me.png'
+        iconPath: './assets/me.png',
+        selectedIconPath: './assets/me.png'
       }
     ]
   }
