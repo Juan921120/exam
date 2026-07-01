@@ -1,13 +1,21 @@
 @use '@/styles/variables.scss' as *;
 
 .mistakesPage {
+  position: relative;
   min-height: 100vh;
   background: $color-bg-page;
+  overflow: hidden;
+}
+
+.contentWrapper {
+  position: relative;
+  z-index: 1;
   padding: $spacing-lg $page-padding;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
 }
 
 .headerSection {
@@ -45,15 +53,22 @@
   width: 100%;
 }
 
-.reviewButton {
+.imageButton {
   @include button-reset;
-  width: 100%;
-  height: $button-height-md;
-  background: $color-primary;
-  border-radius: $radius-sm;
-  font-size: $font-size-md;
-  color: $color-text-white;
+  width: 78%;
+  height: 110rpx;
+  padding: 0;
+  border-radius: $radius-button;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
   transition: all $transition-base;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
 
   &:active {
     opacity: 0.9;
@@ -61,20 +76,10 @@
   }
 }
 
-.clearButton {
-  @include button-reset;
+.buttonImage {
   width: 100%;
-  height: $button-height-md;
-  background: transparent;
-  border: 2rpx solid $color-border;
-  border-radius: $radius-sm;
-  font-size: $font-size-md;
-  color: $color-text-secondary;
-  transition: all $transition-base;
-
-  &:active {
-    opacity: 0.9;
-  }
+  height: 100%;
+  object-fit: contain;
 }
 
 .emptyState {

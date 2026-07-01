@@ -46,10 +46,16 @@ const QuizPage: React.FC = () => {
   });
 
 
-  // 计算错误题目索引（session 复习模式用）
+  // 计算错误和正确题目索引（session 复习模式用）
   const wrongIndices = currentSession && reviewMode === 'session'
     ? currentSession.questions
         .map((q, i) => currentSession.answers[i] !== q.answer ? i : -1)
+        .filter(i => i !== -1)
+    : [];
+  
+  const correctIndices = currentSession && reviewMode === 'session'
+    ? currentSession.questions
+        .map((q, i) => currentSession.answers[i] === q.answer ? i : -1)
         .filter(i => i !== -1)
     : [];
 
@@ -155,6 +161,7 @@ const QuizPage: React.FC = () => {
           total={currentSession.questions.length}
           answered={currentSession.answers.map(a => a !== null)}
           wrongIndices={reviewMode === 'session' ? wrongIndices : undefined}
+          correctIndices={reviewMode === 'session' ? correctIndices : undefined}
           onDotClick={(index) => {
             useQuizStore.getState().goToQuestion(index);
           }}
@@ -173,26 +180,20 @@ const QuizPage: React.FC = () => {
 
       {/* 导航按钮 */}
       <View className={styles.navButtons}>
-        <Button
-          className={styles.navButton}
-          onClick={reviewMode === 'session' ? handleBackFromReview : prevQuestion}
-          disabled={reviewMode !== 'session' && currentSession.currentIndex === 0}
-        >
-          {reviewMode === 'session'
-            ? '← 返回成绩'
-            : reviewMode === 'mistakes'
-              ? '← 上一题'
-              : '← 上一题'
-          }
-        </Button>
+        {currentSession.currentIndex !== 0 && (
+          <Button
+            className={styles.navButton}
+            onClick={reviewMode === 'session' ? prevQuestion : prevQuestion}
+          >
+            ← 上一题
+          </Button>
+        )}
         <View className={styles.navSpacer} />
         {reviewMode === 'session' ? (
-          // session 复习模式：浏览模式，不能作答
           <Button className={styles.navButtonPrimary} onClick={handleNextOrFinish}>
             {isLastQuestion ? '返回成绩' : '下一题 →'}
           </Button>
         ) : isLastQuestion ? (
-          // 正常答题或错题复习：可以提交
           <Button
             className={styles.submitButton}
             onClick={handleSubmit}

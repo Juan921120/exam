@@ -36,13 +36,13 @@
 
 .questionNumWrong {
   font-size: $font-size-sm;
-  color: $color-error;
+  color: $color-error !important;
   font-weight: $font-weight-medium;
 }
 
 .questionNumCorrect {
   font-size: $font-size-sm;
-  color: $color-success;
+  color: $color-success !important;
   font-weight: $font-weight-medium;
 }
 

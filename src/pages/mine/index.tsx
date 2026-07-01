@@ -17,10 +17,10 @@ const MinePage: React.FC = () => {
     <ScrollView className={styles.minePage} scrollY>
       {/* 用户信息 */}
       <View className={styles.userSection}>
-        <View className={styles.userAvatar}>
+        {/* <View className={styles.userAvatar}>
           <Text className={styles.userIcon}>👤</Text>
         </View>
-        <Text className={styles.userName}>AI训练师学员</Text>
+        <Text className={styles.userName}>AI训练师学员</Text> */}
       </View>
 
       {/* 统计数据 */}

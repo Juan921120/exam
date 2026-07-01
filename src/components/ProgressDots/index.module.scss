@@ -54,7 +54,21 @@
   }
 }
 
+.dotCorrect {
+  background: rgba($color-success, 0.15);
+  border-color: $color-success;
+
+  .dotNumber {
+    color: $color-success;
+  }
+}
+
 .dotNumberWrong {
   color: $color-error !important;
+  font-weight: $font-weight-semibold;
+}
+
+.dotNumberCorrect {
+  color: $color-success !important;
   font-weight: $font-weight-semibold;
 }

@@ -84,11 +84,11 @@ const HomePage: React.FC = () => {
       <View className={styles.tipSection}>
         <Text className={styles.tipText}>
           {loaded ? (
-            <>当前题库共<Text className={styles.tipNumber}>{stats.total}</Text>题</>
+            <>当前题库共 <Text className={styles.tipNumber}>{stats.total}</Text> 题</>
           ) : '题库加载中...'}
         </Text>
         <Text className={styles.tipText}>
-          顺序模式已刷<Text className={styles.tipNumber}>{sequentialStartIndex}</Text>题
+          顺序模式已刷 <Text className={styles.tipNumber}>{sequentialStartIndex}</Text> 题
         </Text>
       </View>
     </ScrollView>
