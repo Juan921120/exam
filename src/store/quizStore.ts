@@ -310,10 +310,18 @@ export const useQuizStore = create<QuizStore>((set, get) => {
         const endTime = Date.now();
         const timeSpent = endTime - currentSession.startTime;
 
+        const isAnswerCorrect = (question: Question, userAnswer: string | null): boolean => {
+          if (userAnswer === null || userAnswer === undefined) return false;
+          if (question.type === 'tf' || question.type === 'single') return userAnswer === question.answer;
+          const correct = question.answer.split('').sort().join('');
+          const ua = userAnswer.split(',').sort().join('');
+          return correct === ua;
+        };
+
         let correctCount = 0;
         currentSession.questions.forEach((question, index) => {
           const userAnswer = currentSession.answers[index];
-          if (userAnswer === question.answer) {
+          if (isAnswerCorrect(question, userAnswer)) {
             correctCount++;
           }
         });
@@ -331,7 +339,7 @@ export const useQuizStore = create<QuizStore>((set, get) => {
             answerRecords: currentSession.questions.map((question, index) => ({
               questionId: question.id,
               userAnswer: currentSession.answers[index],
-              isCorrect: currentSession.answers[index] === question.answer,
+              isCorrect: isAnswerCorrect(question, currentSession.answers[index]),
               timeSpent: 0
             }))
           }

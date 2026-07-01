@@ -156,7 +156,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           {question.explanation && (
             <View className={styles.explanationDetail}>
               <Text className={styles.explanationDetailLabel}>💡 解析：</Text>
-              <Text className={styles.explanationDetailText}>{question.explanation}</Text>
+              <Text className={styles.explanationDetailText}>{question.explanation.replace(/\*\*/g, '')}</Text>
             </View>
           )}
           {/* #endif */}
