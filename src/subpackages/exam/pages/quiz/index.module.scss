@@ -28,12 +28,31 @@
 }
 
 .navButtons {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   display: flex;
   gap: $spacing-sm;
-  margin-top: 38rpx;
+  padding: 30rpx $page-padding calc(30rpx + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom,
+      rgba(255, 247, 231, 0) 0%,
+      /* 顶部完全透明 */
+      rgba(255, 247, 231, 0.5) 10%,
+      /* 2%位置几乎透明 */
+      rgba(255, 247, 231, 0.9) 20%,
+      /* 3%位置98%不透明 */
+      #fff7e7 100%
+      /* 底部完全不透明 */
+    );
+  z-index: 100;
 }
 
-.navButton, .navButtonPrimary, .submitButton, .backButtonReview {
+.navButton,
+.navButtonPrimary,
+.submitButton,
+.backButtonReview {
   @include button-reset;
   height: $button-height-lg;
   border-radius: $radius-sm;
@@ -76,11 +95,11 @@
   background: $color-success !important;
   color: $color-text-white !important;
   border: none !important;
-  
+
   &::after {
     border: none !important;
   }
-  
+
   &:not(:disabled) {
     opacity: 1 !important;
   }

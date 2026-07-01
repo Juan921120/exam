@@ -17,25 +17,25 @@ const MinePage: React.FC = () => {
     <ScrollView className={styles.minePage} scrollY>
       {/* 用户信息 */}
       <View className={styles.userSection}>
-        {/* <View className={styles.userAvatar}>
-          <Text className={styles.userIcon}>👤</Text>
+        <View className={styles.userAvatar}>
+          <Text className={styles.userIcon}>🐱</Text>
         </View>
-        <Text className={styles.userName}>AI训练师学员</Text> */}
+        <Text className={styles.userName}>AI训练师</Text> 
       </View>
 
       {/* 统计数据 */}
       <View className={styles.statsGrid}>
         <View className={styles.statItem}>
           <Text className={styles.statValue}>{totalTests}</Text>
-          <Text className={styles.statLabel}>测试次数</Text>
+          <Text className={styles.statLabel}>测试数</Text>
         </View>
         <View className={styles.statItem}>
           <Text className={styles.statValue}>{totalQuestions}</Text>
-          <Text className={styles.statLabel}>答题总数</Text>
+          <Text className={styles.statLabel}>答题数</Text>
         </View>
         <View className={styles.statItem}>
           <Text className={styles.statValue}>{Math.round(avgRate * 100)}%</Text>
-          <Text className={styles.statLabel}>平均正确率</Text>
+          <Text className={styles.statLabel}>正确率</Text>
         </View>
       </View>
 
