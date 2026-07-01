@@ -24,7 +24,7 @@ const ReviewPage: React.FC = () => {
         return (
           <View key={index} className={styles.reviewCard}>
             <View className={styles.cardHeader}>
-              <Text className={styles.questionNum}>第 {index + 1} 题</Text>
+              <Text className={record.isCorrect ? styles.questionNumCorrect : styles.questionNumWrong}>第 {index + 1} 题</Text>
               <Text className={styles.statusTag}>
                 {record.isCorrect ? '✓ 正确' : '✗ 错误'}
               </Text>

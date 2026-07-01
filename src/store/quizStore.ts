@@ -68,6 +68,14 @@ const persistedState = loadState();
 
 // 根据题目ID数组恢复题目对象
 const restoreQuestionsByIds = (questionIds: number[], allQuestions: Question[]): Question[] => {
+  if (!Array.isArray(questionIds)) {
+    console.warn('restoreQuestionsByIds: questionIds is not an array');
+    return [];
+  }
+  if (!Array.isArray(allQuestions) || allQuestions.length === 0) {
+    console.warn('restoreQuestionsByIds: allQuestions is empty');
+    return [];
+  }
   return questionIds.map(id => {
     const found = allQuestions.find(q => q.id === id);
     if (!found) {
@@ -103,7 +111,7 @@ interface QuizStore {
 export const useQuizStore = create<QuizStore>((set, get) => {
   // 尝试从持久化状态恢复当前会话
   const restoreSession = (): QuizSession | null => {
-    if (!persistedState?.sessionQuestionIds || persistedState.sessionQuestionIds.length === 0) {
+    if (!persistedState?.sessionQuestionIds || !Array.isArray(persistedState.sessionQuestionIds) || persistedState.sessionQuestionIds.length === 0) {
       return null;
     }
     try {
@@ -112,15 +120,30 @@ export const useQuizStore = create<QuizStore>((set, get) => {
         console.warn('No questions restored from saved state');
         return null;
       }
+      const savedAnswers = persistedState.sessionAnswers;
+      let answers: (string | null)[];
+      if (Array.isArray(savedAnswers) && savedAnswers.length === questions.length) {
+        answers = savedAnswers;
+      } else {
+        console.warn('sessionAnswers format invalid, resetting to null');
+        answers = questions.map(() => null);
+      }
       return {
         questions,
-        currentIndex: persistedState.sessionCurrentIndex,
-        answers: persistedState.sessionAnswers || questions.map(() => null),
-        startTime: persistedState.sessionStartTime,
-        endTime: persistedState.sessionEndTime
+        currentIndex: typeof persistedState.sessionCurrentIndex === 'number' ? persistedState.sessionCurrentIndex : 0,
+        answers,
+        startTime: typeof persistedState.sessionStartTime === 'number' ? persistedState.sessionStartTime : Date.now(),
+        endTime: typeof persistedState.sessionEndTime === 'number' ? persistedState.sessionEndTime : undefined
       };
     } catch (e) {
       console.error('Failed to restore session:', e);
+      saveState({
+        sessionQuestionIds: null,
+        sessionAnswers: null,
+        sessionCurrentIndex: 0,
+        sessionStartTime: 0,
+        sessionEndTime: undefined
+      });
       return null;
     }
   };
@@ -141,23 +164,37 @@ export const useQuizStore = create<QuizStore>((set, get) => {
 
     loadQuestions: (questions) => {
       set({ allQuestions: questions });
-      // 如果当前没有会话，且存在持久化的会话ID，尝试恢复会话
-      if (!get().currentSession && persistedState?.sessionQuestionIds && persistedState.sessionQuestionIds.length > 0) {
+      if (!get().currentSession && persistedState?.sessionQuestionIds && Array.isArray(persistedState.sessionQuestionIds) && persistedState.sessionQuestionIds.length > 0) {
         try {
           const restoredQuestions = restoreQuestionsByIds(persistedState.sessionQuestionIds, questions);
           if (restoredQuestions.length > 0) {
+            const savedAnswers = persistedState.sessionAnswers;
+            let answers: (string | null)[];
+            if (Array.isArray(savedAnswers) && savedAnswers.length === restoredQuestions.length) {
+              answers = savedAnswers;
+            } else {
+              console.warn('sessionAnswers format invalid in loadQuestions, resetting to null');
+              answers = restoredQuestions.map(() => null);
+            }
             set({
               currentSession: {
                 questions: restoredQuestions,
-                currentIndex: persistedState.sessionCurrentIndex,
-                answers: persistedState.sessionAnswers || restoredQuestions.map(() => null),
-                startTime: persistedState.sessionStartTime,
-                endTime: persistedState.sessionEndTime
+                currentIndex: typeof persistedState.sessionCurrentIndex === 'number' ? persistedState.sessionCurrentIndex : 0,
+                answers,
+                startTime: typeof persistedState.sessionStartTime === 'number' ? persistedState.sessionStartTime : Date.now(),
+                endTime: typeof persistedState.sessionEndTime === 'number' ? persistedState.sessionEndTime : undefined
               }
             });
           }
         } catch (e) {
           console.error('Failed to restore session on loadQuestions:', e);
+          saveState({
+            sessionQuestionIds: null,
+            sessionAnswers: null,
+            sessionCurrentIndex: 0,
+            sessionStartTime: 0,
+            sessionEndTime: undefined
+          });
         }
       }
     },

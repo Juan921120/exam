@@ -1,3 +1,5 @@
+
+
 # 答题小程序
 
 基于 Taro 4.x + React 的跨端答题小程序，支持微信小程序和 H5 平台分离构建。
@@ -13,7 +15,20 @@
 
 为解决微信小程序主包 2MB 的体积限制，本项目采用了**分包加载**策略：
 - **主包**：包含首页 (`pages/home`)、错题本 (`pages/mistakes`)、历史记录 (`pages/mine`) 等轻量级页面。编译后主包核心体积控制在 **~300KB** 以内。
-- **分包 (`subpackages/exam`)**：包含答题页 (`quiz`)、结果页 (`result`) 和解析页 (`review`)。完整的题库数据 (`questions.json`) 仅在分包中引用，因此会被打包到分包的 `sub-vendors.js` 中（约 1.5MB），只有当用户点击“开始测试”进入分包时，微信才会自动在后台下载该大文件。
+- **分包 (`subpackages/exam`)**：包含答题页 (`quiz`)、结果页 (`result`) 和解析页 (`review`)。完整的题库数据 (`questions.json`) 仅在分包中引用，因此会被打包到分包的 `sub-vendors.js` 中（约 1.5MB），只有当用户点击"开始测试"进入分包时，微信才会自动在后台下载该大文件。
+
+### 当前分包与页面归属
+
+| 类型 | 路径 | 页面 | 说明 |
+|------|------|------|------|
+| 主包 | `src/pages/home/index` | 首页 | 入口页，展示题库统计、出题模式 |
+| 主包 | `src/pages/mistakes/index` | 错题本 | 底部 tab：错题记录与复习 |
+| 主包 | `src/pages/mine/index` | 我的 | 底部 tab：历史记录与个人信息 |
+| 分包 | `src/subpackages/exam/pages/quiz/index` | 答题页 | 答题主页面 |
+| 分包 | `src/subpackages/exam/pages/result/index` | 结果页 | 答题结果展示 |
+| 分包 | `src/subpackages/exam/pages/review/index` | 解析页 | 错题/答案解析 |
+
+
 
 ## 题库配置说明
 
@@ -52,6 +67,34 @@
 1. 打开「详情」→「存储」
 2. 点击「清空缓存」或「删除指定数据」
 
+### 数据持久化说明
+
+#### 删除小程序后进度是否会消失？
+
+**是的，会消失。**
+
+当前代码的持久化方式完全依赖微信小程序的**本地存储（Storage）**，这是应用级别的缓存，而非用户级别的云端存储。具体存储实现如下：
+
+| Store 文件 | 存储 Key | 存储内容 |
+|------------|----------|----------|
+| `quizStore.ts` | `quiz-store` | 答题进度、历史记录、顺序模式起始位置等 |
+| `mistakesStore.ts` | `mistakes-storage` | 错题记录（题目 ID、用户答案、添加时间等） |
+
+#### 微信小程序本地存储的特性
+
+- **删除小程序** → 本地存储数据被完全清除 → 重新进入时 `getStorageSync` 返回空，所有进度丢失
+- **清理小程序缓存**（通过「设置」→「通用」→「存储空间」清理） → 数据同样会被清除
+- **更换设备登录** → 数据不会同步，新设备上无任何历史记录
+
+#### 如果需要数据永久保存
+
+目前本地存储方案适用于轻量级使用场景。若需要跨设备同步或防止数据丢失，建议接入后端服务：
+
+- **微信云开发**：使用云数据库存储用户进度和错题本，按用户 OpenID 隔离数据
+- **自建服务器**：提供 RESTful API，将数据存储到云端数据库
+
+接入云端存储后，用户即使删除小程序或更换设备，重新授权登录后仍可恢复历史数据。
+
 ## 技术栈
 
 | 类别 | 技术 |
@@ -60,7 +103,7 @@
 | 语言 | TypeScript |
 | UI | React |
 | 样式 | SCSS Modules |
-| 状态管理 | Zundo |
+| 状态管理 | Zustand |
 
 ## 预览与发布
 
@@ -79,9 +122,32 @@ AI就会自动
 
 **预览地址**（服务启动后有效）：
 ```
-https://trae.mobile.volcapp.com/preview/?ws=ws://localhost:50228
+https://trae.mobile.volcapp.com/preview/?ws=ws://localhost:60204
 ```
+
+> 当前端口号：`60204`（每次启动可能不同，需重新获取）。
 > 提示：如需刷新预览效果，先重新编译 `npm run build:weapp`，然后直接刷新此地址即可，无需重新启动服务。
+
+**如何查看当前端口号**：
+1. 查看终端中 `[TraePreviewUrl]` 输出，格式类似：`[TraePreviewUrl] http://localhost:端口号`
+2. 或使用命令查看 Node.js 监听的端口：
+   ```bash
+   lsof -i -P | grep LISTEN | grep -i node
+   ```
+
+手动启动方法：
+
+```bash
+# 1. 进入项目目录
+cd /Users/umer/Documents/myNote/exam
+
+# 2. 启动预览服务（后台运行）
+node .pai/skill-update/generate-mini-app/scripts/preview-server.js &
+
+# 3. 终端输出 [TraePreviewUrl] 链接，复制到浏览器打开即可看到二维码
+```
+
+> 提示：修改代码后，需重新编译 `npm run build:weapp`，然后刷新浏览器预览页面。
 
 ### 编译构建
 
@@ -105,7 +171,7 @@ https://trae.mobile.volcapp.com/preview/?ws=ws://localhost:50228
 
 **微信开发者工具**
 1. 打开微信开发者工具
-2. 导入项目目录 `/Users/caojuan/Desktop/code/exam`
+2. 导入项目目录 `/Users/umer/Documents/myNote/exam`
 3. AppID 填写你的小程序 AppID
 > `project.config.json` 已配置 `miniprogramRoot` 为 `dist/weapp/`，开发者工具会自动读取该目录下的小程序代码。
 

@@ -1,10 +1,16 @@
 // 首页
 import React from 'react';
-import { View, Text, Button, ScrollView } from '@tarojs/components';
+import { View, Text, Button, ScrollView, Image } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useQuizStore } from '../../store/quizStore';
 import { questionStats } from '../../data/questions-meta';
+import randomBg from '../../assets/random.png';
+import randomDisableBg from '../../assets/random_disable.png';
+import orderBg from '../../assets/order.png';
+import orderDisableBg from '../../assets/order_disable.png';
+import startBg from '../../assets/start.png';
+import introduceBg from '../../assets/introduce.png';
 
 const HomePage: React.FC = () => {
   const { quizMode, setQuizMode, sequentialStartIndex } = useQuizStore();
@@ -19,31 +25,18 @@ const HomePage: React.FC = () => {
     });
   };
 
-  // 查看错题本
-  const handleViewMistakes = () => {
-    Taro.switchTab({
-      url: '/pages/mistakes/index'
-    });
-  };
-
-  // 查看历史记录
-  const handleViewHistory = () => {
-    Taro.switchTab({
-      url: '/pages/mine/index'
-    });
-  };
-
   return (
     <ScrollView className={styles.homePage} scrollY>
       {/* Hero区域 */}
       <View className={styles.heroSection}>
-        <Text className={styles.heroTitle}>人工智能训练师</Text>
+        {/* <Text className={styles.heroTitle}>人工智能训练师</Text>
         <Text className={styles.heroSubtitle}>三级理论题库</Text>
-        <Text className={styles.heroDesc}>随机抽取10题,完成后查看解析与错题分析</Text>
+        <Text className={styles.heroDesc}>随机抽取10题,完成后查看解析与错题分析</Text> */}
+        <Image className={styles.introduceImage} src={introduceBg} mode="widthFix" />
       </View>
 
       {/* 统计信息 */}
-      <View className={styles.statsSection}>
+      {/* <View className={styles.statsSection}>
         <View className={styles.statCard}>
           <Text className={styles.statNum}>{loaded ? stats.tfCount : '—'}</Text>
           <Text className={styles.statLabel}>判断题</Text>
@@ -56,7 +49,7 @@ const HomePage: React.FC = () => {
           <Text className={styles.statNum}>{loaded ? stats.multiCount : '—'}</Text>
           <Text className={styles.statLabel}>多选题</Text>
         </View>
-      </View>
+      </View> */}
 
       {/* 出题模式选择 */}
       <View className={styles.modeSection}>
@@ -66,13 +59,13 @@ const HomePage: React.FC = () => {
             className={quizMode === 'random' ? styles.modeButtonActive : styles.modeButton}
             onClick={() => setQuizMode('random')}
           >
-            🎲 随机模式
+            <Image className={styles.buttonImage} src={quizMode === 'random' ? randomBg : randomDisableBg} mode="aspectFit" />
           </Button>
           <Button
             className={quizMode === 'sequential' ? styles.modeButtonActive : styles.modeButton}
             onClick={() => setQuizMode('sequential')}
           >
-            📋 顺序模式
+            <Image className={styles.buttonImage} src={quizMode === 'sequential' ? orderBg : orderDisableBg} mode="aspectFit" />
           </Button>
         </View>
         <Text className={styles.modeDesc}>
@@ -83,25 +76,19 @@ const HomePage: React.FC = () => {
       {/* 操作按钮 */}
       <View className={styles.actionSection}>
         <Button className={styles.primaryButton} onClick={handleStartQuiz}>
-          🚀 开始测试
+          <Image className={styles.buttonImage} src={startBg} mode="aspectFit" />
         </Button>
-        <View className={styles.secondaryButtons}>
-          <Button className={styles.outlineButton} onClick={handleViewMistakes}>
-            📒 错题本
-          </Button>
-          <Button className={styles.outlineButton} onClick={handleViewHistory}>
-            📊 历史记录
-          </Button>
-        </View>
       </View>
 
       {/* 提示信息 */}
       <View className={styles.tipSection}>
         <Text className={styles.tipText}>
-          {loaded ? `当前题库共${stats.total}题` : '题库加载中...'}
+          {loaded ? (
+            <>当前题库共<Text className={styles.tipNumber}>{stats.total}</Text>题</>
+          ) : '题库加载中...'}
         </Text>
         <Text className={styles.tipText}>
-          顺序模式已刷{sequentialStartIndex}题
+          顺序模式已刷<Text className={styles.tipNumber}>{sequentialStartIndex}</Text>题
         </Text>
       </View>
     </ScrollView>

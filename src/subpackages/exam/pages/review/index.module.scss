@@ -34,9 +34,15 @@
   margin-bottom: $spacing-md;
 }
 
-.questionNum {
+.questionNumWrong {
   font-size: $font-size-sm;
-  color: $color-text-secondary;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}
+
+.questionNumCorrect {
+  font-size: $font-size-sm;
+  color: $color-success;
   font-weight: $font-weight-medium;
 }
 

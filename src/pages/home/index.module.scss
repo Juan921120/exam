@@ -9,32 +9,13 @@
 .heroSection {
   text-align: center;
   padding: $spacing-xl 0;
-  margin-bottom: $spacing-lg;
+  margin-bottom: 0;
+  margin-top: 4px;
 }
 
-.heroTitle {
-  font-size: $font-size-xxl;
-  font-weight: $font-weight-bold;
-  color: $color-primary;
-  margin-bottom: $spacing-xs;
-  display: block;
-  text-align: center;
-}
-
-.heroSubtitle {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  margin-bottom: $spacing-sm;
-  display: block;
-  text-align: center;
-}
-
-.heroDesc {
-  font-size: $font-size-sm;
-  color: $color-text-secondary;
-  display: block;
-  text-align: center;
+.introduceImage {
+  width: 100%;
+  height: auto;
 }
 
 .statsSection {
@@ -67,7 +48,7 @@
 .modeSection {
   background: $color-bg-card;
   border-radius: $radius-md;
-  padding: $spacing-lg;
+  padding: 4px $spacing-lg;
   margin-bottom: $spacing-lg;
   box-shadow: $shadow-card;
 }
@@ -76,25 +57,32 @@
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
-  margin-bottom: $spacing-md;
+  margin-bottom: calc($spacing-md + 6rpx);
+  margin-top: -10rpx;
 }
 
 .modeButtons {
   display: flex;
   gap: $spacing-md;
   margin-bottom: $spacing-sm;
+  margin-top: 6px;
 }
 
 .modeButton, .modeButtonActive {
   @include button-reset;
   flex: 1;
-  height: $button-height-md;
-  background: $color-bg-page;
-  border: 2rpx solid $color-border;
-  border-radius: $radius-sm;
-  font-size: $font-size-md;
-  color: $color-text-primary;
+  height: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  font-size: 0;
+  color: transparent;
   transition: all $transition-base;
+  aspect-ratio: 273 / 98;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:active {
     transform: scale(0.98);
@@ -102,15 +90,16 @@
 }
 
 .modeButtonActive {
-  background: $color-primary;
-  border-color: $color-primary;
-  color: $color-text-white;
+  background: none;
+  border: none;
+  color: transparent;
 }
 
 .modeDesc {
   font-size: $font-size-xs;
   color: $color-text-tertiary;
   text-align: center;
+  margin-bottom: 10rpx;
 }
 
 .actionSection {
@@ -120,14 +109,16 @@
 .primaryButton {
   @include button-reset;
   width: 100%;
-  height: $button-height-lg;
-  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
-  border-radius: $radius-button;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $color-text-white;
+  height: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  font-size: 0;
+  color: transparent;
   margin-bottom: $spacing-md;
   transition: all $transition-base;
+  aspect-ratio: 401 / 98;
 
   &:active {
     opacity: 0.9;
@@ -135,25 +126,9 @@
   }
 }
 
-.secondaryButtons {
-  display: flex;
-  gap: $spacing-md;
-}
-
-.outlineButton {
-  @include button-reset;
-  flex: 1;
-  height: $button-height-md;
-  background: $color-bg-card;
-  border: 2rpx solid $color-border;
-  border-radius: $radius-sm;
-  font-size: $font-size-md;
-  color: $color-text-primary;
-  transition: all $transition-base;
-
-  &:active {
-    transform: scale(0.98);
-  }
+.buttonImage {
+  width: 100%;
+  height: 100%;
 }
 
 .tipSection {
@@ -167,5 +142,9 @@
   font-size: $font-size-xs;
   color: $color-warning;
   display: block;
-  margin-bottom: $spacing-xs;
+  margin-bottom: calc($spacing-xs - 10rpx);
+}
+
+.tipNumber {
+  color: rgb(221, 193, 115);
 }
