@@ -57,9 +57,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     return userAnswer === optionKey;
   };
 
-  // 复习模式下判断选项的样式类
-  const getReviewOptionClass = (optionKey: string) => {
-    if (!isReview) return '';
+  // 复习模式下判断选项的样式类和状态符号
+  const getReviewOptionInfo = (optionKey: string) => {
+    if (!isReview) return { className: '', status: null };
 
     const correctKeys = question.type === 'multi'
       ? question.answer.split('')
@@ -71,10 +71,16 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     const isCorrectKey = correctKeys.includes(optionKey);
     const isSelected = selectedKeys.includes(optionKey);
 
-    if (isCorrectKey && isSelected) return styles.optionCorrect;       // 正确且选中 → 绿色
-    if (!isCorrectKey && isSelected) return styles.optionWrong;        // 错误且选中 → 红色
-    if (isCorrectKey && !isSelected) return styles.optionMissed;       // 正确但未选中 → 黄色
-    return '';
+    if (isCorrectKey && isSelected) return { className: styles.optionCorrect, status: { symbol: '✓', className: styles.statusCorrect } };
+    if (!isCorrectKey && isSelected) return { className: styles.optionWrong, status: { symbol: '✗', className: styles.statusWrong } };
+    if (isCorrectKey && !isSelected) {
+      if (question.type === 'multi') {
+        return { className: styles.optionMissed, status: { symbol: '◯', className: styles.statusMissed } };
+      } else {
+        return { className: styles.optionCorrect, status: { symbol: '✓', className: styles.statusCorrect } };
+      }
+    }
+    return { className: '', status: null };
   };
 
   // 获取显示的选项
@@ -118,21 +124,27 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
       {/* 选项列表 */}
       <View className={styles.optionsList}>
-        {displayOptions.map((option) => (
-          <Button
-            key={option.key}
-            className={classnames(
-              styles.optionButton,
-              isOptionSelected(option.key) && !isReview && styles.optionSelected,
-              isReview && getReviewOptionClass(option.key)
-            )}
-            onClick={() => handleOptionClick(option.key)}
-            disabled={isReview}
-          >
-            <Text className={styles.optionKey}>{option.key}</Text>
-            <Text className={styles.optionText}>{option.text}</Text>
-          </Button>
-        ))}
+        {displayOptions.map((option) => {
+          const { className: reviewClass, status } = isReview ? getReviewOptionInfo(option.key) : { className: '', status: null };
+          return (
+            <Button
+              key={option.key}
+              className={classnames(
+                styles.optionButton,
+                isOptionSelected(option.key) && !isReview && styles.optionSelected,
+                reviewClass
+              )}
+              onClick={() => handleOptionClick(option.key)}
+              disabled={isReview}
+            >
+              <Text className={styles.optionKey}>{option.key}</Text>
+              <Text className={styles.optionText}>{option.text}</Text>
+              {status && (
+                <Text className={classnames(styles.statusSymbol, status.className)}>{status.symbol}</Text>
+              )}
+            </Button>
+          );
+        })}
       </View>
 
       {/* 复习模式：显示答案解析 */}

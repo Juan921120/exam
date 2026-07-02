@@ -46,15 +46,14 @@ export interface MistakeRecord {
 }
 
 interface MistakesStore {
-  // 错题列表
   mistakeRecords: MistakeRecord[];
 
-  // Actions
   addMistake: (question: Question, userAnswer: string | null) => void;
   removeMistake: (questionId: number) => void;
   clearMistakes: () => void;
   isMistake: (questionId: number) => boolean;
   getMistakeRecords: () => MistakeRecord[];
+  batchUpdateMistakes: (addList: { question: Question; userAnswer: string | null }[], removeIds: number[]) => void;
 }
 
 export const useMistakesStore = create<MistakesStore>()(
@@ -92,7 +91,22 @@ export const useMistakesStore = create<MistakesStore>()(
         return records.some(r => r && r.question && r.question.id === questionId);
       },
 
-      getMistakeRecords: () => (get().mistakeRecords || []).filter(r => r && r.question)
+      getMistakeRecords: () => (get().mistakeRecords || []).filter(r => r && r.question),
+
+      batchUpdateMistakes: (addList, removeIds) => {
+        const { mistakeRecords } = get();
+        let validRecords = (mistakeRecords || []).filter(r => r && r.question);
+        validRecords = validRecords.filter(r => !removeIds.includes(r.question.id));
+        addList.forEach(({ question, userAnswer }) => {
+          const existingIndex = validRecords.findIndex(r => r.question.id === question.id);
+          if (existingIndex === -1) {
+            validRecords.push({ question, userAnswer, lastWrong: Date.now() });
+          } else {
+            validRecords[existingIndex] = { ...validRecords[existingIndex], userAnswer, lastWrong: Date.now() };
+          }
+        });
+        set({ mistakeRecords: validRecords });
+      }
     }),
     {
       name: 'mistakes-storage',

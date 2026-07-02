@@ -36,7 +36,7 @@ const ResultPage: React.FC = () => {
 
   const handleNextRound = () => {
     startQuiz();
-    Taro.redirectTo({ url: '/subpackages/exam/pages/quiz/index' });
+    Taro.reLaunch({ url: '/subpackages/exam/pages/quiz/index?action=start' });
   };
 
   if (!latestRecord) {

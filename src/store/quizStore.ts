@@ -2,14 +2,21 @@ import { create } from 'zustand';
 import Taro from '@tarojs/taro';
 import type { QuizSession, QuizMode, QuizHistory } from '../types/quiz';
 import type { Question } from '../types/question';
-// 只引入纯工具函数，不引入 questions.ts（避免 questions.json 被打包进主包）
 import { getRandomQuestions, getSequentialQuestions } from '../data/question-utils';
 import type { MistakeRecord } from './mistakesStore';
-// 注意：sampleQuestions（题库数据）不在此处静态 import
-// 由分包页面（subpackages/exam）在运行时通过 loadQuestions() 注入，避免数据进入主包
 
-// Storage key
 const STORAGE_KEY = 'quiz-store';
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+const debouncedSaveState = (state: Partial<PersistedState>) => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+  debounceTimer = setTimeout(() => {
+    saveState(state);
+    debounceTimer = null;
+  }, 500);
+};
 
 // 轻量级持久化状态接口（只保存必要数据）
 interface PersistedState {
@@ -271,7 +278,7 @@ export const useQuizStore = create<QuizStore>((set, get) => {
       const { currentSession } = get();
       if (currentSession && index >= 0 && index < currentSession.questions.length) {
         set({ currentSession: { ...currentSession, currentIndex: index } });
-        saveState({ sessionCurrentIndex: index });
+        debouncedSaveState({ sessionCurrentIndex: index });
       }
     },
 
@@ -280,7 +287,7 @@ export const useQuizStore = create<QuizStore>((set, get) => {
       if (currentSession && currentSession.currentIndex < currentSession.questions.length - 1) {
         const newIndex = currentSession.currentIndex + 1;
         set({ currentSession: { ...currentSession, currentIndex: newIndex } });
-        saveState({ sessionCurrentIndex: newIndex });
+        debouncedSaveState({ sessionCurrentIndex: newIndex });
       }
     },
 
@@ -289,7 +296,7 @@ export const useQuizStore = create<QuizStore>((set, get) => {
       if (currentSession && currentSession.currentIndex > 0) {
         const newIndex = currentSession.currentIndex - 1;
         set({ currentSession: { ...currentSession, currentIndex: newIndex } });
-        saveState({ sessionCurrentIndex: newIndex });
+        debouncedSaveState({ sessionCurrentIndex: newIndex });
       }
     },
 
@@ -300,7 +307,7 @@ export const useQuizStore = create<QuizStore>((set, get) => {
         newAnswers[currentSession.currentIndex] = answer;
         const updatedSession = { ...currentSession, answers: newAnswers };
         set({ currentSession: updatedSession });
-        saveState({ sessionAnswers: newAnswers });
+        debouncedSaveState({ sessionAnswers: newAnswers });
       }
     },
 

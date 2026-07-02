@@ -95,13 +95,13 @@
   }
 }
 
-// 复习模式：遗漏的正确答案（莫兰迪奶油黄）
+// 复习模式：正确但未选（莫兰迪蓝，与红色高对比）
 .optionMissed {
-  background: rgba($color-warning, 0.15);
-  border-color: $color-warning;
+  background: rgba($color-info, 0.2);
+  border-color: $color-info;
 
   .optionKey, .optionText {
-    color: #B8A070;
+    color: #5A8FC7;
   }
 }
 
@@ -121,6 +121,26 @@
   word-break: break-all;
   overflow-wrap: break-word;
   white-space: normal;
+}
+
+// 复习模式：状态符号
+.statusSymbol {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}
+
+.statusCorrect {
+  color: #6B9B7A;
+}
+
+.statusWrong {
+  color: #B87070;
+}
+
+.statusMissed {
+  color: #5A8FC7;
 }
 
 // 复习模式：答案解析

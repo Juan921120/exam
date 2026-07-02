@@ -1,179 +1,145 @@
 #!/usr/bin/env python3
 """
-为 questions.json 中的每题自动生成解析说明（本地数据）。
-解析基于题目类型、关键词和答案生成。
+为 questions.json 中的每题自动生成解析说明（优化版）
+策略：
+1. 判断题：基于题目中的核心名词 + 答案（T/F）生成针对性解析
+2. 单选题：提取正确答案文本，结合题目关键词生成解析
+3. 多选题：提取所有正确选项文本，生成综合性解析
 """
 
 import json
 import re
+from collections import Counter
 
-# ── 判断题解析模板 ──
-TF_TRUE_EXPLANATIONS = {
-    "道德": "该行为符合职业道德规范的要求，是职业活动中应当遵循的基本准则。",
-    "语音": "语音输入是Windows系统提供的智能应用功能之一，可通过语音识别技术实现文字输入。",
-    "维护": "Windows系统维护工具确实可以帮助用户优化系统性能、清理垃圾文件和修复问题。",
-    "Ctrl": "这是Windows系统中的标准快捷键操作，可用于复制选中的文本或对象。",
-    "Word": "Word作为办公软件，具备多文档编辑、样式应用、图文混排等功能。",
-    "浏览器": "浏览器是访问网页的基本工具，通过地址栏输入网址即可访问目标网站。",
-    "人工智能": "该描述符合人工智能训练师的职业规范，应当充分考虑技术发展趋势和潜在风险。",
-    "趋势": "随着人工智能技术的发展，该描述反映了行业内的正确认知和实践方向。",
+# ── 核心名词→解析模板（自动从题目中提取，无需手动维护） ──
+# 这些是兜底模板，当自动提取失败时使用
+FALLBACK_TEMPLATES = {
+    "T": "该说法正确，符合相关理论知识和实践规范。",
+    "F": "该说法错误，与相关理论知识和实际操作规范不符。"
 }
 
-TF_FALSE_EXPLANATIONS = {
-    "敏感数据": "根据数据保护法规和职业道德，处理敏感数据必须获得用户明确同意，不可擅自使用。",
-    "全球化": "职业道德在不同国家和地区存在差异，受文化、法律和社会环境的影响，并非单一化。",
-    "训练效果": "人工智能训练师在职业道德建设中必须综合考虑数据质量、适用性等多方面因素，而非仅关注训练效果。",
-    "歧视": "人工智能训练师对模型输出结果负有责任，必须关注和避免模型可能产生的歧视性或偏见性结果。",
-    "隐私": "保护用户隐私是人工智能训练师职业道德的重要组成部分，必须在工作中严格遵守。",
-    "算法": "人工智能训练师的主要任务包括数据标注、模型训练、效果评估等，而不仅仅是设计和开发新算法。",
-    "职业守则": "职业守则不仅是道德层面的约束，其中部分内容也可能涉及行业规范和法律责任。",
-    "遵守法律": "遵守法律是职业守则的核心内容之一，是从业人员必须遵循的基本准则。",
-    "自觉性": "职业守则的实施与监督需要组织制度保障和多方参与，不能完全依靠个人自觉性。",
-    "个人利益": "奉献社会要求正确处理个人利益和社会整体利益的关系，应将社会整体利益放在首位，而非个人利益。",
-    "爱岗敬业": "爱岗敬业是一种职业态度，更多取决于职业道德修养，而非仅取决于专业技能。",
-    "模型参数": "调整模型参数需要基于科学方法和数据分析，不能仅凭个人经验和直觉，需要遵循规范流程。",
-    "F8": "进入Windows高级启动选项通常需要按F8键，但在某些情况下鼠标和键盘无法使用时，可能需要其他方式。",
-    "时钟": "Windows 10小工具中的时钟功能不支持锁定前端显示，这是该功能的限制。",
-    "普遍性": "职业守则虽然有一定的通用性，但不同行业有其特定的职业守则要求，并非完全适用于所有行业。",
-}
+# ── 自动生成解析的核心函数 ──
 
-# ── 单选题解析模板 ──
-SINGLE_EXPLANATIONS = {
-    "职业道德": {
-        "A": "职业道德是人们在职业活动中应遵循的行为准则和规范。",
-        "B": "职业纪律是调整职业个人、职业主体和社会成员之间关系的行为准则和规范。",
-        "C": "职业道德的基本要求包括爱岗敬业、诚实守信、办事公道、服务群众、奉献社会。",
-        "D": "职业道德的核心是为人民服务。",
-    },
-    "Windows": {
-        "A": "这是Windows操作系统的标准功能或操作方式。",
-        "B": "Windows系统提供了多种方式进行文件管理和系统设置。",
-        "C": "Windows操作系统的快捷键和功能设计符合用户操作习惯。",
-        "D": "这是Windows系统中正确的操作步骤或功能描述。",
-    },
-    "Word": {
-        "A": "Word作为办公软件，该功能是其标准特性之一。",
-        "B": "Word提供了丰富的文档编辑和排版功能。",
-        "C": "Word中的样式和模板功能可以大大提高办公效率。",
-        "D": "Word支持多种格式的文档编辑和排版操作。",
-    },
-    "浏览器": {
-        "A": "浏览器是访问互联网的基本工具，该功能是其标准特性。",
-        "B": "浏览器提供了丰富的网页浏览和设置功能。",
-        "C": "浏览器的设置和功能可以帮助用户更好地使用互联网。",
-        "D": "这是浏览器中的正确操作方式或功能描述。",
-    },
-    "人工智能": {
-        "A": "该选项正确描述了人工智能训练中的相关概念或流程。",
-        "B": "人工智能训练涉及数据处理、模型训练、算法优化等多个环节。",
-        "C": "该选项反映了人工智能领域的正确实践方法。",
-        "D": "这是人工智能训练师工作中需要掌握的基本知识。",
-    },
-    "数据": {
-        "A": "数据处理是人工智能训练中的重要环节，该选项描述了正确的处理方法。",
-        "B": "数据标注需要遵循一定的规范和标准。",
-        "C": "数据质量直接影响模型训练的效果。",
-        "D": "该选项正确描述了数据相关的概念或操作。",
-    },
-}
-
-# ── 多选题解析模板 ──
-MULTI_EXPLANATIONS = {
-    "职业道德": "职业道德是人们在职业活动中应遵循的行为准则和规范的总和，包括道德准则、道德情操和道德品质等方面。",
-    "奉献社会": "奉献社会要求树立正确的义利观，正确处理个人利益与社会利益的关系，积极为社会做贡献。",
-    "人工智能": "人工智能训练涉及多个方面的知识和技能，正确答案涵盖了该领域的关键要素。",
-    "训练": "模型训练过程涉及多个环节和要素，正确答案包含了训练过程中的关键步骤。",
-    "数据": "数据处理涉及多个环节，正确答案涵盖了数据处理的关键方面。",
-    "Windows": "Windows系统提供了多种功能和工具，正确答案涵盖了相关功能的关键方面。",
-    "Word": "Word提供了丰富的文档处理功能，正确答案涵盖了相关功能的关键特性。",
-}
+def extract_core_noun(text):
+    """
+    从题目中提取核心名词/关键词
+    例如："数据融合技术主要用于..." → "数据融合"
+    """
+    # 移除疑问词和修饰词
+    stop_words = ["以下", "上述", "关于", "对于", "是指", "指的是", "通常", "一般", 
+                  "主要", "可以", "能够", "需要", "应当", "应该", "必须", "一定"]
+    
+    # 提取第一个有意义的2-4字名词
+    # 匹配中文词组
+    pattern = r'([\u4e00-\u9fa5]{2,4})(?:技术|工具|方法|系统|平台|流程|原则|规范|标准|数据|模型|算法|训练|业务|流程)'
+    match = re.search(pattern, text)
+    if match:
+        return match.group(1) + match.group(0)[-2:] if len(match.group(0)) >= 4 else match.group(1)
+    
+    # 备选：提取第一个2-4字中文词组
+    pattern2 = r'([\u4e00-\u9fa5]{2,4})'
+    matches = re.findall(pattern2, text)
+    for m in matches:
+        if m not in stop_words and len(m) >= 2:
+            return m
+    
+    return None
 
 
 def generate_tf_explanation(q):
-    """为判断题生成解析"""
+    """生成判断题解析 - 自动提取核心词生成针对性解析"""
     text = q.get("q", "")
     answer = q.get("answer", "")
-
-    # 关键词匹配 - 错误题
-    for keyword, explanation in TF_FALSE_EXPLANATIONS.items():
-        if keyword in text and answer == "F":
-            return explanation
-
-    # 关键词匹配 - 正确题
-    for keyword, explanation in TF_TRUE_EXPLANATIONS.items():
-        if keyword in text and answer == "T":
-            return explanation
-
-    # 通用解析
+    
+    # 1. 尝试提取核心名词
+    core = extract_core_noun(text)
+    
+    # 2. 判断是否包含否定词（用于错误题的更精确描述）
+    has_negation = any(word in text for word in ["不需要", "无需", "不用", "不能", "无法", "不应", "不可"])
+    has_absolute = any(word in text for word in ["所有", "任何", "完全", "唯一", "只能", "只要", "必须"])
+    
+    # 3. 生成针对性解析
     if answer == "T":
-        # 分析题目内容生成合理的正确解析
-        if "正确" in text or "可以" in text or "能够" in text or "是" in text:
-            return "该说法正确，符合相关知识点和实际操作规范。"
-        return "该说法正确，符合相关理论知识和实践要求。"
+        if core:
+            return f"该说法正确。{core}的相关定义和操作规范与题目描述一致，符合行业标准。"
+        elif "是" in text and "。" in text:
+            # 提取句号前的部分作为依据
+            prefix = text.split("。")[0] if "。" in text else text
+            return f"该说法正确。{prefix}，这是该知识点的基本定义。"
+        else:
+            return FALLBACK_TEMPLATES["T"]
     else:
-        # 分析题目内容生成合理的错误解析
-        if "可以" in text or "能够" in text:
-            return "该说法不正确，实际操作中存在限制条件或规范要求，并非所有情况都适用。"
-        if "不需要" in text or "无需" in text or "不用" in text:
-            return "该说法错误，相关环节确实需要考虑该因素，不可忽视。"
-        if "完全" in text or "只能" in text or "唯一" in text:
-            return "该说法过于绝对，实际情况更为复杂，存在多种可能性和影响因素。"
-        if "所有" in text or "任何" in text:
-            return "该说法以偏概全，并非所有情况都如此，存在例外情况。"
-        return "该说法错误，不符合相关理论知识和实际操作规范。"
+        if core:
+            if has_absolute:
+                return f"该说法错误。关于{core}的描述过于绝对，实际情况中存在多种可能性和例外，不可一概而论。"
+            elif has_negation:
+                return f"该说法错误。{core}在实践中确实需要考虑相关因素，题目中的否定表述不符合实际要求。"
+            else:
+                return f"该说法错误。{core}的实际规范与题目描述不符，需要根据正确的理论依据进行判断。"
+        elif "可以" in text and "直接" in text:
+            return "该说法错误。虽然操作可能可行，但通常需要遵循规范流程或满足前置条件，不能直接进行。"
+        else:
+            return FALLBACK_TEMPLATES["F"]
 
 
 def generate_single_explanation(q):
-    """为单选题生成解析"""
+    """生成单选题解析 - 提取正确答案并解释"""
     text = q.get("q", "")
     answer = q.get("answer", "")
     options = q.get("options", [])
-
+    
     # 找到正确答案的文本
     correct_text = ""
     for opt in options:
         if opt.get("key") == answer:
             correct_text = opt.get("text", "")
             break
-
-    # 关键词匹配
-    for keyword, explanations in SINGLE_EXPLANATIONS.items():
-        if keyword in text and answer in explanations:
-            return explanations[answer]
-
-    # 通用解析
-    if correct_text:
-        return f'正确答案是"{answer}. {correct_text}"。根据题目所涉及的知识点，该选项最符合题意。'
-    return f"正确答案是 {answer}。请根据相关知识点理解该选项为何正确。"
+    
+    # 提取核心名词
+    core = extract_core_noun(text)
+    
+    # 生成解析
+    if core and correct_text:
+        return f'正确答案：{answer}。在{core}的相关知识中，{correct_text}是最符合题意的选项。'
+    elif correct_text:
+        return f'正确答案：{answer}。{correct_text}是该知识点的正确表述。'
+    else:
+        return f'正确答案：{answer}。请结合相关知识点理解该选项为何正确。'
 
 
 def generate_multi_explanation(q):
-    """为多选题生成解析"""
+    """生成多选题解析 - 综合所有正确选项"""
     text = q.get("q", "")
-    answer = q.get("answer", "")  # e.g., "ABC"
+    answer = q.get("answer", "")
     options = q.get("options", [])
-
+    
     # 收集正确选项的文本
     correct_texts = []
     for opt in options:
         if opt.get("key") in answer:
-            correct_texts.append(f'{opt.get("key")}. {opt.get("text")}')
-
-    # 关键词匹配
-    for keyword, explanation in MULTI_EXPLANATIONS.items():
-        if keyword in text:
-            return explanation + f' 正确答案为 {answer}：{"；".join(correct_texts)}。'
-
-    # 通用解析
-    if correct_texts:
-        return f'正确答案为 {answer}，包括：{"；".join(correct_texts)}。这些选项共同构成了该知识点的完整答案。'
-    return f"正确答案为 {answer}。请结合相关知识点，理解每个正确选项的含义。"
+            correct_texts.append(opt.get("text", ""))
+    
+    # 提取核心名词
+    core = extract_core_noun(text)
+    
+    # 生成解析
+    if core and correct_texts:
+        if len(correct_texts) == 1:
+            return f'正确答案：{answer}。在{core}的知识体系中，{correct_texts[0]}是正确表述。'
+        elif len(correct_texts) == 2:
+            return f'正确答案：{answer}。{core}涵盖多个方面，{correct_texts[0]}和{correct_texts[1]}都是正确的表述。'
+        else:
+            return f'正确答案：{answer}。{core}涉及多个维度，{len(correct_texts)}个正确选项共同构成了完整的知识内容。'
+    elif correct_texts:
+        return f'正确答案：{answer}。正确选项包括：{"；".join(correct_texts)}。'
+    else:
+        return f'正确答案：{answer}。请结合相关知识点理解各正确选项。'
 
 
 def generate_explanation(q):
     """根据题目类型生成解析"""
     q_type = q.get("type", "")
-
+    
     if q_type == "tf":
         return generate_tf_explanation(q)
     elif q_type == "single":
@@ -184,36 +150,63 @@ def generate_explanation(q):
         return "请参考相关知识点理解本题。"
 
 
-def main():
-    # 读取原始题库
-    with open("questions.json", "r", encoding="utf-8") as f:
-        questions = json.load(f)
-
-    print(f"共 {len(questions)} 题")
-
+def analyze_coverage(questions):
+    """分析解析生成质量"""
+    generic_count = 0
     tf_count = 0
     single_count = 0
     multi_count = 0
-
+    
     for q in questions:
-        explanation = generate_explanation(q)
-        q["explanation"] = explanation
-
+        expl = q.get("explanation", "")
+        if expl in FALLBACK_TEMPLATES.values() or "相关知识点" in expl:
+            generic_count += 1
+        
         if q["type"] == "tf":
             tf_count += 1
         elif q["type"] == "single":
             single_count += 1
         elif q["type"] == "multi":
             multi_count += 1
+    
+    return {
+        "total": len(questions),
+        "tf": tf_count,
+        "single": single_count,
+        "multi": multi_count,
+        "generic": generic_count
+    }
 
-    print(f"判断题: {tf_count}, 单选题: {single_count}, 多选题: {multi_count}")
-    print("解析生成完成！")
 
+def main():
+    # 读取原始题库
+    with open("questions.json", "r", encoding="utf-8") as f:
+        questions = json.load(f)
+    
+    print(f"📚 共加载 {len(questions)} 题")
+    print("🔄 正在生成解析...")
+    
+    for q in questions:
+        q["explanation"] = generate_explanation(q)
+    
+    # 分析覆盖情况
+    stats = analyze_coverage(questions)
+    print(f"\n📊 统计信息:")
+    print(f"   - 判断题: {stats['tf']} 题")
+    print(f"   - 单选题: {stats['single']} 题")
+    print(f"   - 多选题: {stats['multi']} 题")
+    
+    generic_rate = stats['generic'] / stats['total'] * 100 if stats['total'] > 0 else 0
+    print(f"   - 通用解析(待优化): {stats['generic']} 题 ({generic_rate:.1f}%)")
+    
+    if generic_rate > 20:
+        print(f"\n⚠️  建议: 有 {stats['generic']} 题使用了通用模板，可考虑人工复核优化。")
+    
     # 写回文件
     with open("questions.json", "w", encoding="utf-8") as f:
         json.dump(questions, f, ensure_ascii=False, indent=2)
-
-    print("questions.json 已更新。")
+    
+    print("\n✅ questions.json 已更新！")
 
 
 if __name__ == "__main__":

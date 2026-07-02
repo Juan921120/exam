@@ -8,6 +8,7 @@ import { useMistakesStore } from '../../../../store/mistakesStore';
 import QuestionCard from '../../../../components/QuestionCard';
 import ProgressDots from '../../../../components/ProgressDots';
 import TimerDisplay from '../../../../components/TimerDisplay';
+import type { Question } from '../../../../types/question';
 // 题库数据只在分包中引用，不会被打包进主包 common.js
 import { sampleQuestions } from '../../../../data/questions';
 
@@ -23,7 +24,7 @@ const QuizPage: React.FC = () => {
     loadQuestions,
     allQuestions,
   } = useQuizStore();
-  const { addMistake, removeMistake } = useMistakesStore();
+  const { addMistake, removeMistake, batchUpdateMistakes } = useMistakesStore();
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -46,16 +47,25 @@ const QuizPage: React.FC = () => {
   });
 
 
+  // 判断答案是否正确（兼容多选题逗号分隔格式）
+  const isAnswerCorrect = (question: Question, userAnswer: string | null) => {
+    if (userAnswer === null || userAnswer === undefined) return false;
+    if (question.type === 'tf' || question.type === 'single') return userAnswer === question.answer;
+    const correct = question.answer.split('').sort().join('');
+    const ua = userAnswer.split(',').sort().join('');
+    return correct === ua;
+  };
+
   // 计算错误和正确题目索引（session 复习模式用）
   const wrongIndices = currentSession && reviewMode === 'session'
     ? currentSession.questions
-        .map((q, i) => currentSession.answers[i] !== q.answer ? i : -1)
+        .map((q, i) => isAnswerCorrect(q, currentSession.answers[i]) ? -1 : i)
         .filter(i => i !== -1)
     : [];
-  
+
   const correctIndices = currentSession && reviewMode === 'session'
     ? currentSession.questions
-        .map((q, i) => currentSession.answers[i] === q.answer ? i : -1)
+        .map((q, i) => isAnswerCorrect(q, currentSession.answers[i]) ? i : -1)
         .filter(i => i !== -1)
     : [];
 
@@ -85,28 +95,31 @@ const QuizPage: React.FC = () => {
       submitQuiz();
       console.log('[submit] submitQuiz 完成');
 
-      // 处理错题本
+      // 处理错题本 - 批量更新，减少 Storage 写入次数
       if (reviewMode === 'mistakes') {
-        // 错题复习模式：答对的从错题本移除，答错的保留
+        const addList: { question: Question; userAnswer: string | null }[] = [];
+        const removeIds: number[] = [];
         currentSession.questions.forEach((question, index) => {
           const userAnswer = currentSession.answers[index];
           if (userAnswer === question.answer) {
             console.log('[submit] 答对移除错题:', question.id);
-            removeMistake(question.id);
+            removeIds.push(question.id);
           } else {
             console.log('[submit] 答错更新错题:', question.id, '用户答案:', userAnswer);
-            addMistake(question, userAnswer);
+            addList.push({ question, userAnswer });
           }
         });
+        batchUpdateMistakes(addList, removeIds);
       } else {
-        // 正常答题模式：答错的加入错题本
+        const addList: { question: Question; userAnswer: string | null }[] = [];
         currentSession.questions.forEach((question, index) => {
           const userAnswer = currentSession.answers[index];
           if (userAnswer !== question.answer) {
             console.log('[submit] 添加错题:', question.id, '用户答案:', userAnswer);
-            addMistake(question, userAnswer);
+            addList.push({ question, userAnswer });
           }
         });
+        batchUpdateMistakes(addList, []);
       }
       console.log('[submit] 错题处理完成');
 
