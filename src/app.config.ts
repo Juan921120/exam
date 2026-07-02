@@ -45,6 +45,7 @@ export default defineAppConfig({
         selectedIconPath: 'assets/me.png'
       }
     ]
-  }
+  },
+  lazyCodeLoading: 'requiredComponents'
 })
 

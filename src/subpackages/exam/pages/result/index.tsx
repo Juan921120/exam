@@ -5,7 +5,7 @@ import Taro, { useLoad, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useQuizStore } from '../../../../store/quizStore';
 import { sampleQuestions } from '../../../../data/questions';
-import bgImage from '../../../../assets/UI_03.png';
+import bgImage from '../../../../assets/UI_03.jpg';
 import rightBg from '../../../../assets/right.png';
 import wrongBg from '../../../../assets/wrong.png';
 import timeBg from '../../../../assets/time.png';
